@@ -3,3 +3,5 @@
 
 #scene text{pointer-events:none}
 
+
+#scene{aspect-ratio:10/7}.add-mass{background:var(--orange);border-color:var(--orange);color:white;padding:10px 14px;font-weight:600}.mass-row{grid-template-columns:18px minmax(0,1fr) minmax(0,1fr) 52px}.remove{font-size:10px;min-height:36px;border:1px solid var(--line);padding:4px;color:var(--orange)}@media(max-width:900px){.settings .mass-row{grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 58px}}
