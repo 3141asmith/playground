@@ -4,6 +4,10 @@ A small, static home for experiments and projects. Includes the electron diffrac
 
 ## Moments Lab
 
+**Game mode** adds ten fictional scenarios: an overhanging book, seesaw, wardrobe, market scales, builders' plank, crane, bridge, mobile, camera boom, and festival sign. Each defines editable masses/pivots and locks its fixed loads. Some require adding a specific counterweight. Check balance accepts a difference of at most 0.2 N m, with both opposing moments nonzero and the beam horizontal. Hints and retries are unlimited; completing a level unlocks the next. Progress lasts for the current page session. Switching back to Sandbox restores its saved loads.
+
+With the local server running, browser checks are in `tests/moments.cjs` and `tests/moments-game.cjs`. Run them with the workspace Node. They use the workspace Playwright installation and Edge; set `PLAYGROUND_URL` to test another deployment. The game check solves all ten levels through the UI and verifies progression and sandbox restoration. Screenshots are written to ignored `artifacts/`.
+
 Open `moments/`. Drag the beam to place it, drag the pivot along it, and add, move, edit or remove up to eight attached masses. Numeric controls provide keyboard access to beam length, beam mass, pivot position, and each load. Toggle force and moment arrows, inspect the individual moments in the table, or release the beam to watch it rotate.
 
 Weights use g = 9.81 m/s². Moments use the horizontal (perpendicular) distance to each vertical weight. Positive torque is clockwise in screen coordinates. Angular motion integrates torque divided by the point-mass and uniform-beam moment of inertia at 120 Hz, with light pivot damping. The pivot is fixed and masses stay attached; no collisions are modelled. Editing the setup holds the beam level again. A zero-inertia configuration does not rotate.
