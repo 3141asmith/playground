@@ -19,25 +19,28 @@
  function step(dt){if(!state.running)return;const i=inertia();if(i<1e-9){state.omega=0;return;}state.omega+=(calculate().net/i-.65*state.omega)*dt;state.angle+=state.omega*dt;state.angle=Math.atan2(Math.sin(state.angle),Math.cos(state.angle));}
  function node(tag,attrs={},text){const el=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
  function draw(){
-  const svg=$('scene'),group=node('g');
+  const svg=$('scene'),group=node('g'),scenario=policy?.scene;
+  let sceneDrawing=null;
   const radius=Math.max(state.pivot,state.length-state.pivot)*scale()+110;
   svg.setAttribute('viewBox',state.running?`${state.x-Math.max(500,radius)} ${state.y-Math.max(350,radius)} ${Math.max(1000,2*radius)} ${Math.max(700,2*radius)}`:'0 0 1000 700');
+  if(scenario){const width=Math.max(600,state.length*scale()+200),centre=(point(0).x+point(state.length).x)/2;svg.setAttribute('viewBox',`${centre-width/2} ${state.y-250} ${width} 560`);svg.dataset.scenario=scenario;}else delete svg.dataset.scenario;
   const defs=node('defs');for(const [id,color]of [['weight','#695695'],['cw','#b64223'],['ccw','#36715e']]){const marker=node('marker',{id:'arrow-'+id,viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});marker.append(node('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color}));defs.append(marker);}group.append(defs);
   for(let x=0;x<=1000;x+=50)group.append(node('line',{x1:x,y1:0,x2:x,y2:700,stroke:'#d4ddca','stroke-width':1}));
   for(let y=0;y<=700;y+=50)group.append(node('line',{x1:0,y1:y,x2:1000,y2:y,stroke:'#d4ddca','stroke-width':1}));
-  group.append(node('path',{d:`M ${state.x-30} ${state.y+48} L ${state.x} ${state.y} L ${state.x+30} ${state.y+48} Z`,fill:'#7a896b',stroke:'#526347','stroke-width':2,'data-drag':'pivot',class:'draggable'}));
-  const a=point(0),b=point(state.length);group.append(node('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#b8a181','stroke-width':22,'stroke-linecap':'round','data-drag':'beam',class:'draggable'}));
+  if(scenario)sceneDrawing=window.MomentsScenes.render({type:scenario,group,state,point,node,name,fmt,allowed});
+  if(!scenario)group.append(node('path',{d:`M ${state.x-30} ${state.y+48} L ${state.x} ${state.y} L ${state.x+30} ${state.y+48} Z`,fill:'#7a896b',stroke:'#526347','stroke-width':2,'data-drag':'pivot',class:'draggable'}));
+  const a=point(0),b=point(state.length);if(!scenario)group.append(node('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#b8a181','stroke-width':22,'stroke-linecap':'round','data-drag':'beam',class:'draggable'}));
   for(let p=0;p<=state.length+.001;p+=.5){const q=point(p),s=Math.sin(state.angle),c=Math.cos(state.angle);group.append(node('line',{x1:q.x-6*s,y1:q.y+6*c,x2:q.x+6*s,y2:q.y-6*c,stroke:'#75634e','stroke-width':1.5,'pointer-events':'none'}));if(Number.isInteger(p))group.append(node('text',{x:q.x-26*s,y:q.y+26*c+4,'text-anchor':'middle',fill:'#625b4d','font-size':13},p+' m'));}
   group.append(node('circle',{cx:state.x,cy:state.y,r:10,fill:'#faf9f5',stroke:'#526347','stroke-width':3,'data-drag':'pivot',class:'draggable'}));
-  group.append(node('text',{x:state.x,y:state.y+72,'text-anchor':'middle',fill:'#526347','font-size':13},'PIVOT · '+fmt(state.pivot,1)+' m'));
+  group.append(node('text',{x:state.x,y:state.y+(scenario?200:72),'text-anchor':'middle',fill:'#526347','font-size':13},'PIVOT · '+fmt(state.pivot,1)+' m'));
   const result=calculate();
   if(state.vectors){
-   for(const m of result.rows){const q=point(m.position);if(m.kg<=0)continue;const len=36+Math.min(48,m.force*.25);group.append(node('line',{x1:q.x,y1:q.y+6,x2:q.x,y2:q.y+len,stroke:'#695695','stroke-width':3,'marker-end':'url(#arrow-weight)'}));group.append(node('text',{x:q.x+9,y:q.y+len-8,fill:'#695695','font-size':13},fmt(m.force,1)+' N'));
-    if(Math.abs(m.moment)>.005){const cw=m.moment>0,r=40+(m.id%3)*15,sign=cw?1:-1;group.append(node('path',{d:`M ${q.x-r*.75} ${q.y-47} A ${r} ${r} 0 0 ${cw?1:0} ${q.x+r*.75} ${q.y-47}`,fill:'none',stroke:cw?'#b64223':'#36715e','stroke-width':2.5,'marker-end':`url(#arrow-${cw?'cw':'ccw'})`,'data-moment':cw?'cw':'ccw'}));group.append(node('text',{x:q.x,y:q.y-103,'text-anchor':'middle',fill:cw?'#b64223':'#36715e','font-size':12},fmt(Math.abs(m.moment),1)+' N m '+(sign>0?'↷':'↶')));}
+   for(const m of result.rows){const q=sceneDrawing?.anchors.get(m.id)||point(m.position);if(m.kg<=0)continue;const len=36+Math.min(48,m.force*.25);group.append(node('line',{x1:q.x,y1:q.y+6,x2:q.x,y2:q.y+len,stroke:'#695695','stroke-width':3,'marker-end':'url(#arrow-weight)'}));group.append(node('text',{x:q.x+9,y:q.y+len-8,fill:'#695695','font-size':13},fmt(m.force,1)+' N'));
+    if(Math.abs(m.moment)>.005){const cw=m.moment>0,r=40+(m.id%3)*15,sign=cw?1:-1;const arc=scenario?{x:state.x,y:state.y+160}:q;group.append(node('path',{d:`M ${arc.x-r*.75} ${arc.y-47} A ${r} ${r} 0 0 ${cw?1:0} ${arc.x+r*.75} ${arc.y-47}`,fill:'none',stroke:cw?'#b64223':'#36715e','stroke-width':2.5,'marker-end':`url(#arrow-${cw?'cw':'ccw'})`,'data-moment':cw?'cw':'ccw'}));if(!scenario)group.append(node('text',{x:q.x,y:q.y-103,'text-anchor':'middle',fill:cw?'#b64223':'#36715e','font-size':12},fmt(Math.abs(m.moment),1)+' N m '+(sign>0?'↷':'↶')));}
    }
-   group.append(node('text',{x:26,y:32,fill:'#695695','font-size':13},'↓ Weight    ↶ Anticlockwise    ↷ Clockwise'));
+   group.append(node('text',{x:scenario?(point(0).x+point(state.length).x)/2-Math.max(600,state.length*scale()+200)/2+20:26,y:scenario?state.y-230:32,fill:'#695695','font-size':13},'↓ Weight    ↶ Anticlockwise    ↷ Clockwise'));
   }
-  for(const m of state.masses){const q=point(m.position),color=colors[(m.id-1)%colors.length];group.append(node('circle',{cx:q.x,cy:q.y-22,r:22,fill:color,stroke:'#faf9f5','stroke-width':3,'data-drag':'mass','data-id':m.id,class:'draggable'}));group.append(node('text',{x:q.x,y:q.y-17,'text-anchor':'middle',fill:'#fff','font-size':14,'pointer-events':'none'},name(m.id)));group.append(node('text',{x:q.x,y:q.y-54,'text-anchor':'middle',fill:color,'font-size':14,'pointer-events':'none'},fmt(m.kg,1)+' kg'));}
+  if(!scenario)for(const m of state.masses){const q=point(m.position),color=colors[(m.id-1)%colors.length];group.append(node('circle',{cx:q.x,cy:q.y-22,r:22,fill:color,stroke:'#faf9f5','stroke-width':3,'data-drag':'mass','data-id':m.id,class:'draggable'}));group.append(node('text',{x:q.x,y:q.y-17,'text-anchor':'middle',fill:'#fff','font-size':14,'pointer-events':'none'},name(m.id)));group.append(node('text',{x:q.x,y:q.y-54,'text-anchor':'middle',fill:color,'font-size':14,'pointer-events':'none'},fmt(m.kg,1)+' kg'));}
   svg.replaceChildren(group);$('ccw').textContent=fmt(result.ccw)+' N m';$('cw').textContent=fmt(result.cw)+' N m';$('net').textContent=fmt(Math.abs(result.net))+' N m '+(Math.abs(result.net)<.005?'':result.net>0?'↷':'↶');
   $('status').textContent=state.running?(Math.abs(state.omega)<.002&&Math.abs(result.net)<.005?'Balanced':'Beam released'):Math.abs(result.net)<.005?'Balanced':result.net>0?'Clockwise moment':'Anticlockwise moment';$('angle').textContent=fmt(state.angle*180/Math.PI,1)+'°';
  }

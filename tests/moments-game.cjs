@@ -5,6 +5,14 @@ const {chromium}=require('../../.runtime/tools/node_modules/playwright');const a
  const solutions=[{id:2,key:'position',v:2.4},{id:2,key:'position',v:4},{add:true,id:2,key:'position',v:1.2},{id:2,key:'kg',v:3},{pivot:3},{add:true,id:2,key:'position',v:1},{id:2,key:'position',v:0},{id:3,key:'position',v:4},{id:2,key:'kg',v:3},{add:true,id:3,key:'position',v:3}];
  for(let i=0;i<10;i++){
   assert.equal(await page.evaluate(()=>momentsGame.index),i);assert(Math.abs(await page.evaluate(()=>momentsLab.calculate().net))>.2);
+  await page.waitForFunction(()=>document.getElementById('scene').dataset.scenario===momentsGame.levels[momentsGame.index].art);
+  assert.equal(await page.locator('[data-scenario-object]').count(),await page.evaluate(()=>momentsLab.state.masses.length));
+  await page.locator('#scene').screenshot({path:`artifacts/scenario-${i+1}.png`});
+  if(i===0){
+   const box=await page.evaluate(()=>{const r=document.querySelector('[data-scenario-object][data-id="2"] rect[fill="transparent"]').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};});const initial=await page.evaluate(()=>momentsLab.state.masses[1].position);
+   await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+30,box.y+box.height/2,{steps:4});await page.mouse.up();assert(await page.evaluate(()=>momentsLab.state.masses[1].position)>initial);
+   await page.locator('#retry').click();
+  }
   await page.locator('#check-balance').click();assert.equal((await page.evaluate(()=>momentsGame.completed)).length,i);assert(await page.locator('#next-level').isDisabled());
   assert(await page.getByRole('button',{name:'Remove mass A',exact:true}).isDisabled());
   await page.locator('#hint').click();assert(await page.locator('#hint-text').isVisible());
