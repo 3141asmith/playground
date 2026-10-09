@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moments lab · Playground</title><meta name="description" content="Position a pivot, load a beam, and explore forces and turning moments."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="style.css"></head>
+<body><main><header><a href="../">← playground.</a><span>04 / MOMENTS LAB</span></header>
+<section class="heading"><p class="eyebrow">A LITTLE WEIGHT. A BIG DIFFERENCE.</p><h1>Find the balance.</h1><p>Move the pivot. Load the beam. Explore what makes it turn.</p></section>
+<div class="workspace"><section class="experiment" aria-labelledby="scene-title"><div class="panel-heading"><h2 id="scene-title">Your beam</h2><span id="status" role="status">Balanced</span></div>
+<svg id="scene" tabindex="0" viewBox="0 0 1000 700" role="group" aria-label="Interactive beam. Drag the beam to place it, the pivot to move it, and masses along the beam. Focus this area and use arrow keys to place the beam. The adjacent controls provide keyboard access to pivot and masses."></svg>
+<div class="scene-footer"><span>Drag the beam, pivot or masses</span><span id="angle">0.0°</span></div>
+<div class="totals"><div><span>ANTICLOCKWISE ↶</span><strong id="ccw">0 N m</strong></div><div><span>CLOCKWISE ↷</span><strong id="cw">0 N m</strong></div><div><span>RESULTANT MOMENT</span><strong id="net">0 N m</strong></div></div>
+</section>
+<aside class="settings" aria-label="Experiment controls"><div class="setting-heading"><h2>Set up your experiment</h2><button id="reset" class="text-button">Reset</button></div>
+<label class="field">Beam length <span><input id="length" type="number" min="2" max="8" step="0.5" value="6"> m</span></label>
+<label class="field">Beam mass <span><input id="beam-mass" type="number" min="0" max="20" step="0.5" value="0"> kg</span></label><p class="small">Uniform beam. Set mass to zero to ignore its weight.</p>
+<label class="field">Pivot from left end <span><input id="pivot" type="number" min="0" max="6" step="0.1" value="3"> m</span></label>
+<div class="presets" aria-label="Pivot positions"><button data-pivot="0">Left end</button><button data-pivot="0.5">Centre</button><button data-pivot="1">Right end</button></div>
+<div class="setting-heading masses-heading"><h2>Masses</h2><button id="add" class="text-button">+ Add mass</button></div><div id="masses"></div>
+<label class="toggle"><input id="vectors" type="checkbox" checked> Show forces &amp; moment directions</label>
+<button id="release" class="primary">Release beam</button><p class="small" id="mode-note">Beam held level while you arrange the experiment.</p>
+</aside></div>
+<section class="breakdown" aria-labelledby="table-title"><h2 id="table-title">Where the moments come from</h2><div class="table-scroll"><table><thead><tr><th>Load</th><th>Weight / N</th><th>Position / m</th><th>Perpendicular distance / m</th><th>Moment / N m</th><th>Direction</th></tr></thead><tbody id="moment-rows"></tbody></table></div></section>
+<footer><p><strong>Moment = force × perpendicular distance.</strong> Weights act vertically downwards, so the lever arm is the horizontal distance from the pivot to the force’s line of action. Equal opposing moments balance.</p><p>g = 9.81 m/s² · masses are attached to the beam · ideal fixed pivot with light rotational damping · no collisions. Release lets the beam rotate; Hold level returns it to the horizontal for a fresh comparison. Positions are measured from the left end.</p></footer>
+</main><script src="simulation.js"></script></body></html>

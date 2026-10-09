@@ -1,6 +1,12 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, and Motion Lab: a draggable, bouncing ball with live vertical motion graphs. No build step or server API is needed.
+A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, and Moments Lab: a beam, pivot, and movable loads. No build step or server API is needed.
+
+## Moments Lab
+
+Open `moments/`. Drag the beam to place it, drag the pivot along it, and add, move, edit or remove up to eight attached masses. Numeric controls provide keyboard access to beam length, beam mass, pivot position, and each load. Toggle force and moment arrows, inspect the individual moments in the table, or release the beam to watch it rotate.
+
+Weights use g = 9.81 m/s². Moments use the horizontal (perpendicular) distance to each vertical weight. Positive torque is clockwise in screen coordinates. Angular motion integrates torque divided by the point-mass and uniform-beam moment of inertia at 120 Hz, with light pivot damping. The pivot is fixed and masses stay attached; no collisions are modelled. Editing the setup holds the beam level again. A zero-inertia configuration does not rotate.
 
 ## Motion Lab
 
