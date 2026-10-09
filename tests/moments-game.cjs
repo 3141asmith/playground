@@ -6,6 +6,8 @@ const {chromium}=require('../../.runtime/tools/node_modules/playwright');const a
  for(let i=0;i<10;i++){
   assert.equal(await page.evaluate(()=>momentsGame.index),i);assert(Math.abs(await page.evaluate(()=>momentsLab.calculate().net))>.2);
   await page.waitForFunction(()=>document.getElementById('scene').dataset.scenario===momentsGame.levels[momentsGame.index].art);
+  const arcs=await page.evaluate(()=>[...document.querySelectorAll('[data-moment]')].map(el=>{const n=el.getAttribute('d').match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi).map(Number);const cx=Number(el.dataset.centreX),cy=Number(el.dataset.centreY),r=Number(el.dataset.radius);return {direction:el.dataset.moment,sweep:n[6],cross:(n[0]-cx)*(n[8]-cy)-(n[1]-cy)*(n[7]-cx),startRadius:Math.hypot(n[0]-cx,n[1]-cy),endRadius:Math.hypot(n[7]-cx,n[8]-cy),r,cx,cy,pivotX:momentsLab.state.x,pivotY:momentsLab.state.y};}));
+  assert(arcs.length<=2);for(const arc of arcs){assert.equal(arc.cx,arc.pivotX);assert.equal(arc.cy,arc.pivotY);assert(Math.abs(arc.startRadius-arc.r)<1e-8);assert(Math.abs(arc.endRadius-arc.r)<1e-8);assert.equal(arc.sweep,arc.direction==='cw'?1:0);assert(arc.direction==='cw'?arc.cross>0:arc.cross<0);}
   assert.equal(await page.locator('[data-scenario-object]').count(),await page.evaluate(()=>momentsLab.state.masses.length));
   await page.locator('#scene').screenshot({path:`artifacts/scenario-${i+1}.png`});
   if(i===0){

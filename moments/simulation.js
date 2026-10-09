@@ -36,7 +36,19 @@
   const result=calculate();
   if(state.vectors){
    for(const m of result.rows){const q=sceneDrawing?.anchors.get(m.id)||point(m.position);if(m.kg<=0)continue;const len=36+Math.min(48,m.force*.25);group.append(node('line',{x1:q.x,y1:q.y+6,x2:q.x,y2:q.y+len,stroke:'#695695','stroke-width':3,'marker-end':'url(#arrow-weight)'}));group.append(node('text',{x:q.x+9,y:q.y+len-8,fill:'#695695','font-size':13},fmt(m.force,1)+' N'));
-    if(Math.abs(m.moment)>.005){const cw=m.moment>0,r=40+(m.id%3)*15,sign=cw?1:-1;const arc=scenario?{x:state.x,y:state.y+160}:q;group.append(node('path',{d:`M ${arc.x-r*.75} ${arc.y-47} A ${r} ${r} 0 0 ${cw?1:0} ${arc.x+r*.75} ${arc.y-47}`,fill:'none',stroke:cw?'#b64223':'#36715e','stroke-width':2.5,'marker-end':`url(#arrow-${cw?'cw':'ccw'})`,'data-moment':cw?'cw':'ccw'}));if(!scenario)group.append(node('text',{x:q.x,y:q.y-103,'text-anchor':'middle',fill:cw?'#b64223':'#36715e','font-size':12},fmt(Math.abs(m.moment),1)+' N m '+(sign>0?'↷':'↶')));}
+
+   }
+   for(const [direction,total,radius,startAngle,endAngle,color]of [
+    ['cw',result.cw,70,30,150,'#b64223'],
+    ['ccw',result.ccw,100,150,30,'#36715e']
+   ]){
+    if(total<.005)continue;
+    const radians=degrees=>degrees*Math.PI/180;
+    const start={x:state.x+radius*Math.cos(radians(startAngle)),y:state.y+radius*Math.sin(radians(startAngle))};
+    const end={x:state.x+radius*Math.cos(radians(endAngle)),y:state.y+radius*Math.sin(radians(endAngle))};
+    const clockwise=direction==='cw';
+    group.append(node('path',{d:`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${clockwise?1:0} ${end.x} ${end.y}`,fill:'none',stroke:color,'stroke-width':3,'marker-end':`url(#arrow-${direction})`,'data-moment':direction,'data-centre-x':state.x,'data-centre-y':state.y,'data-radius':radius,'aria-label':`${clockwise?'Clockwise':'Anticlockwise'} moment: ${fmt(total)} newton metres`}));
+    group.append(node('text',{x:state.x+(clockwise?-radius-15:radius+15),y:state.y+radius*.72,'text-anchor':clockwise?'end':'start',fill:color,'font-size':13,'font-weight':600},`${clockwise?'CW':'ACW'} ${fmt(total)} N m`));
    }
    group.append(node('text',{x:scenario?(point(0).x+point(state.length).x)/2-Math.max(600,state.length*scale()+200)/2+20:26,y:scenario?state.y-230:32,fill:'#695695','font-size':13},'↓ Weight    ↶ Anticlockwise    ↷ Clockwise'));
   }
