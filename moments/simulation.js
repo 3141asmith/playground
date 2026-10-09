@@ -18,10 +18,17 @@
  function inertia(){return state.beamMass*(state.length**2/12+(state.length/2-state.pivot)**2)+state.masses.reduce((sum,m)=>sum+m.kg*(m.position-state.pivot)**2,0);}
  function step(dt){if(!state.running)return;const i=inertia();if(i<1e-9){state.omega=0;return;}state.omega+=(calculate().net/i-.65*state.omega)*dt;state.angle+=state.omega*dt;state.angle=Math.atan2(Math.sin(state.angle),Math.cos(state.angle));}
  function node(tag,attrs={},text){const el=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
+ function forceArrow(group,x,y,force,reference=false){
+  const length=force,head=Math.min(10,length*.35),halfWidth=Math.min(5,length*.2);
+  const arrow=node('g',{'pointer-events':'none','data-force':force,'data-force-scale':1,'data-force-reference':String(reference)});
+  arrow.append(node('line',{x1:x,y1:y,x2:x,y2:y+length-head,stroke:'#695695','stroke-width':Math.min(3,length*.12),'stroke-linecap':'butt'}));
+  arrow.append(node('path',{d:`M ${x} ${y+length} L ${x-halfWidth} ${y+length-head} L ${x+halfWidth} ${y+length-head} Z`,fill:'#695695'}));
+  group.append(arrow);return y+length;
+ }
  function draw(){
   const svg=$('scene'),group=node('g'),scenario=policy?.scene;
   let sceneDrawing=null;
-  const radius=Math.max(state.pivot,state.length-state.pivot)*scale()+110;
+  const radius=Math.max(state.pivot,state.length-state.pivot)*scale()+230;
   svg.setAttribute('viewBox',state.running?`${state.x-Math.max(500,radius)} ${state.y-Math.max(350,radius)} ${Math.max(1000,2*radius)} ${Math.max(700,2*radius)}`:'0 0 1000 700');
   if(scenario){const width=Math.max(600,state.length*scale()+200),centre=(point(0).x+point(state.length).x)/2;svg.setAttribute('viewBox',`${centre-width/2} ${state.y-250} ${width} 560`);svg.dataset.scenario=scenario;}else delete svg.dataset.scenario;
   const defs=node('defs');for(const [id,color]of [['weight','#695695'],['cw','#b64223'],['ccw','#36715e']]){const marker=node('marker',{id:'arrow-'+id,viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});marker.append(node('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color}));defs.append(marker);}group.append(defs);
@@ -35,7 +42,7 @@
   group.append(node('text',{x:state.x,y:state.y+(scenario?200:72),'text-anchor':'middle',fill:'#526347','font-size':13},'PIVOT · '+fmt(state.pivot,1)+' m'));
   const result=calculate();
   if(state.vectors){
-   for(const m of result.rows){const q=sceneDrawing?.anchors.get(m.id)||point(m.position);if(m.kg<=0)continue;const len=36+Math.min(48,m.force*.25);group.append(node('line',{x1:q.x,y1:q.y+6,x2:q.x,y2:q.y+len,stroke:'#695695','stroke-width':3,'marker-end':'url(#arrow-weight)'}));group.append(node('text',{x:q.x+9,y:q.y+len-8,fill:'#695695','font-size':13},fmt(m.force,1)+' N'));
+   for(const m of result.rows){const q=sceneDrawing?.anchors.get(m.id)||point(m.position);if(m.kg<=0)continue;const tip=forceArrow(group,q.x,q.y,m.force);group.append(node('text',{x:q.x+10,y:tip+4,fill:'#695695','font-size':13},fmt(m.force,1)+' N'));
 
    }
    for(const [direction,total,radius,startAngle,endAngle,color]of [
@@ -50,6 +57,8 @@
     group.append(node('path',{d:`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${clockwise?1:0} ${end.x} ${end.y}`,fill:'none',stroke:color,'stroke-width':3,'marker-end':`url(#arrow-${direction})`,'data-moment':direction,'data-centre-x':state.x,'data-centre-y':state.y,'data-radius':radius,'aria-label':`${clockwise?'Clockwise':'Anticlockwise'} moment: ${fmt(total)} newton metres`}));
     group.append(node('text',{x:state.x+(clockwise?-radius-15:radius+15),y:state.y+radius*.72,'text-anchor':clockwise?'end':'start',fill:color,'font-size':13,'font-weight':600},`${clockwise?'CW':'ACW'} ${fmt(total)} N m`));
    }
+   const legendX=scenario?(point(0).x+point(state.length).x)/2-Math.max(600,state.length*scale()+200)/2+32:38,legendY=scenario?state.y-210:52;
+   forceArrow(group,legendX,legendY,50,true);group.append(node('text',{x:legendX+13,y:legendY+28,fill:'#695695','font-size':12},'50 N reference'));
    group.append(node('text',{x:scenario?(point(0).x+point(state.length).x)/2-Math.max(600,state.length*scale()+200)/2+20:26,y:scenario?state.y-230:32,fill:'#695695','font-size':13},'↓ Weight    ↶ Anticlockwise    ↷ Clockwise'));
   }
   if(!scenario)for(const m of state.masses){const q=point(m.position),color=colors[(m.id-1)%colors.length];group.append(node('circle',{cx:q.x,cy:q.y-22,r:22,fill:color,stroke:'#faf9f5','stroke-width':3,'data-drag':'mass','data-id':m.id,class:'draggable'}));group.append(node('text',{x:q.x,y:q.y-17,'text-anchor':'middle',fill:'#fff','font-size':14,'pointer-events':'none'},name(m.id)));group.append(node('text',{x:q.x,y:q.y-54,'text-anchor':'middle',fill:color,'font-size':14,'pointer-events':'none'},fmt(m.kg,1)+' kg'));}
