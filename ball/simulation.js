@@ -34,12 +34,15 @@
  }
  function chart({canvas,key,color}){
   const {c,w,h}=size(canvas),box={x:49,y:12,w:w-65,h:h-35},end=Math.max(WINDOW,state.t),start=end-WINDOW;
-  let min=0,max=H;if(key!=='distance'){let peak=key==='velocity'?5:Math.max(12,state.g*1.2);for(const p of samples)peak=Math.max(peak,Math.abs(p[key])*1.12);min=-peak;max=peak;}
+  let min=0,max=H;if(key!=='distance'){let peak=key==='velocity'?5:Math.max(12,state.g*1.5);if(key==='velocity')for(const p of samples)peak=Math.max(peak,Math.abs(p[key])*1.12);min=-peak;max=peak;}
   const px=t=>box.x+(t-start)/WINDOW*box.w,py=v=>box.y+box.h-(v-min)/(max-min)*box.h;
   c.clearRect(0,0,w,h);c.font='9px sans-serif';c.lineWidth=1;
   for(let i=0;i<=4;i++){const value=min+(max-min)*i/4,y=py(value);c.strokeStyle=Math.abs(value)<1e-8?'#b4b7a9':'#e3e3d9';c.beginPath();c.moveTo(box.x,y);c.lineTo(box.x+box.w,y);c.stroke();c.fillStyle='#777b6f';c.textAlign='right';c.fillText(Math.abs(value)>=100?value.toFixed(0):value.toFixed(1),box.x-7,y+3);}
   for(let i=0;i<=4;i++){const t=start+WINDOW*i/4,x=px(t);c.strokeStyle='#e3e3d9';c.beginPath();c.moveTo(x,box.y);c.lineTo(x,box.y+box.h);c.stroke();c.fillStyle='#777b6f';c.textAlign='center';c.fillText(t.toFixed(0)+' s',x,h-6);}
-  c.save();c.beginPath();c.rect(box.x,box.y,box.w,box.h);c.clip();c.strokeStyle=color;c.lineWidth=1.6;c.beginPath();samples.forEach((p,i)=>{if(i===0)c.moveTo(px(p.t),py(p[key]));else c.lineTo(px(p.t),py(p[key]));});c.stroke();c.restore();
+  if(key==='acceleration'){const y=py(-state.g);c.strokeStyle='#9b8db5';c.setLineDash([4,4]);c.beginPath();c.moveTo(box.x,y);c.lineTo(box.x+box.w,y);c.stroke();c.setLineDash([]);c.fillStyle='#695695';c.textAlign='right';c.fillText('−g = −'+state.g.toFixed(2)+' m/s²',box.x+box.w-4,y-5);}
+  c.save();c.beginPath();c.rect(box.x,box.y,box.w,box.h);c.clip();c.strokeStyle=color;c.lineWidth=1.6;c.beginPath();samples.forEach((p,i)=>{if(i===0)c.moveTo(px(p.t),py(p[key]));else c.lineTo(px(p.t),py(p[key]));});c.stroke();
+  if(key==='acceleration'){c.fillStyle=color;for(const p of samples){if(p[key]>=min&&p[key]<=max)continue;const x=px(p.t),top=p[key]>max,y=top?box.y+1:box.y+box.h-1;c.beginPath();c.moveTo(x,y);c.lineTo(x-3,y+(top?5:-5));c.lineTo(x+3,y+(top?5:-5));c.closePath();c.fill();}}
+  c.restore();canvas.dataset.min=min;canvas.dataset.max=max;
  }
  function render(){drawWorld();charts.forEach(chart);$('height').textContent=state.y.toFixed(2)+' m';$('velocity').textContent=state.vy.toFixed(2)+' m/s';$('time').textContent=state.t.toFixed(1)+' s';$('status').textContent=state.paused?'Paused':state.dragging?'In your hands':state.y<=R+.001&&Math.abs(state.vy)<.01?'At rest':state.vy>0?'Rising':'Falling';$('recording').textContent=(state.paused?'Paused':'Live')+' · last 12 seconds';}
  function position(e){const rect=world.getBoundingClientRect(),m=mapping();return {x:(e.clientX-rect.left-m.left)/m.s,y:H-(e.clientY-rect.top-m.top)/m.s};}
