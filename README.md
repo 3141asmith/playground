@@ -1,6 +1,12 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation and the browser-only Quickdraw viewer. No build step or server API is needed.
+A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, and Motion Lab: a draggable, bouncing ball with live vertical motion graphs. No build step or server API is needed.
+
+## Motion Lab
+
+Open `ball/`. Drag the ball and release to throw it, or focus the simulation and use arrow keys. Gravity and bounciness are adjustable. Pause freezes simulation time; Reset clears the graphs and returns the ball to its starting point, preserving the gravity and bounciness settings.
+
+The distance graph measures ball centre height above the floor. Velocity and acceleration are vertical components, positive upwards. Physics runs at 120 fixed steps per simulated second; graphs retain 12 seconds sampled at 60 Hz. Acceleration is the change in vertical velocity per plotted interval, including collisions and dragging. Bounces apply a restitution coefficient; low-energy contacts settle on the floor. There is no air resistance. Hidden tabs suspend time.
 
 ## Preview
 

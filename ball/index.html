@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Motion lab · Playground</title><meta name="description" content="Grab, throw and bounce a ball. Explore its motion with three live graphs."><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="style.css"></head>
+<body>
+<main>
+<header><a href="../">← playground.</a><span>03 / MOTION LAB</span></header>
+<section class="heading"><div><p class="eyebrow">GET A FEEL FOR PHYSICS</p><h1>Motion, made visible.</h1></div><p>Grab the ball. Move it. Let it go.<br>Follow every fall and bounce in the graphs.</p></section>
+<div class="workspace">
+<section class="environment" aria-labelledby="space-title"><div class="panel-heading"><h2 id="space-title">The playground</h2><span id="status" role="status">Falling</span></div><canvas id="world" tabindex="0" aria-label="Ball simulation. Drag the ball to move and throw it. With this area focused, hold arrow keys to move it; release to drop it."></canvas><div class="readouts"><div><span>HEIGHT</span><strong id="height">4.00 m</strong></div><div><span>VERTICAL VELOCITY</span><strong id="velocity">0.00 m/s</strong></div><div><span>TIME</span><strong id="time">0.0 s</strong></div></div><p class="hint">Drag to move · release to throw · arrow keys also work</p></section>
+<section class="graphs" aria-label="Live vertical motion graphs">
+<article><div class="graph-heading"><h2>Distance–time</h2><span class="distance">HEIGHT ABOVE FLOOR · m</span></div><canvas id="distance-chart" role="img" aria-label="Live distance-time graph showing ball centre height above the floor in metres"></canvas></article>
+<article><div class="graph-heading"><h2>Velocity–time</h2><span class="velocity">VERTICAL VELOCITY · m/s</span></div><canvas id="velocity-chart" role="img" aria-label="Live vertical velocity-time graph in metres per second; upwards is positive"></canvas></article>
+<article><div class="graph-heading"><h2>Acceleration–time</h2><span class="acceleration">VERTICAL ACCELERATION · m/s²</span></div><canvas id="acceleration-chart" role="img" aria-label="Live vertical acceleration-time graph in metres per second squared; upwards is positive"></canvas></article>
+</section>
+</div>
+<section class="controls" aria-label="Simulation controls"><div class="buttons"><button id="pause">Pause</button><button id="reset" class="secondary">Reset</button></div><label>Gravity <output id="gravity-value">9.81 m/s²</output><input id="gravity" type="range" min="0" max="20" step="0.01" value="9.81"></label><label>Bounciness <output id="bounce-value">75%</output><input id="bounce" type="range" min="0" max="1" step="0.01" value="0.75"></label><p id="recording">Live · last 12 seconds</p></section>
+<aside class="explanation"><p><strong>Read the motion.</strong> These graphs follow vertical motion: distance is the ball’s centre height above the floor, and upward velocity and acceleration are positive. Horizontal movement stays visible in the playground.</p><p>During free fall, acceleration is −g. Bounces and your hand change the velocity, producing acceleration spikes. Impacts are averaged over each plotted interval (1/60 s); graph scales adjust automatically. Pausing freezes time and the graphs.</p></aside>
+<footer>Ideal gravity and wall collisions · no air resistance · space is 10 × 6 metres</footer>
+</main><script src="simulation.js"></script>
+</body></html>
