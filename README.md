@@ -1,6 +1,14 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, and Moments Lab: a beam, pivot, and movable loads. No build step or server API is needed.
+A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit. No build step or server API is needed.
+
+## Capacitor Lab
+
+Open `capacitor/`. Adjust resistance and either set C directly or derive it from plate overlap area, separation, and dielectric permittivity. Both ideal voltage curves remain visible; Charge/Discharge switches the animated circuit and live readouts. The time axis stays fixed when circuit parameters change so different time constants produce visibly different curves; Fit 5τ rescales it on demand. Playback runs at one time constant per real second, with physical elapsed time labelled. Changing parameters restarts the experiment. Discharge starts at the full 6 V supply voltage.
+
+Uses C = ε₀εrA/d, τ = RC, Q = CV, and exponential RC voltage/current laws, with SI conversions from cm², mm, MΩ, and nF. Materials use representative relative permittivities. The parallel-plate model assumes full dielectric filling and neglects fringing and leakage. The physical units and plot are accurate; plate dimensions and current dots are schematic.
+
+Run `tests/capacitor.cjs` with the workspace Node while the local preview server is running, or set `PLAYGROUND_URL` to check a deployed site.
 
 ## Moments Lab
 
