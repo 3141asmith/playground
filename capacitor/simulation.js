@@ -1,7 +1,7 @@
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id),EPS0=8.8541878128e-12,SUPPLY=6,NS='http://www.w3.org/2000/svg';
- const state={resistance:10e6,capacitance:0,area:200e-4,spacing:1e-3,er:1,source:'geometry',mode:'charging',elapsed:0,running:false,window:.01};
+ const state={resistance:10e6,capacitance:0,area:200e-4,spacing:1e-3,er:1,source:'geometry',mode:'charging',elapsed:0,running:false,speed:1,window:.01};
  let last=0,phase=0;
  const geometryCapacitance=(area,spacing,er)=>EPS0*er*area/spacing;
  const tau=()=>state.resistance*state.capacitance;
@@ -23,6 +23,7 @@
  number('window',1e-7,1000,v=>{state.window=v;});$('fit').addEventListener('click',()=>{state.window=5*tau();$('window').value=Number(state.window.toPrecision(5));});
  for(const mode of ['charging','discharging'])$(mode).addEventListener('click',()=>{state.mode=mode;$('charging').setAttribute('aria-pressed',mode==='charging');$('discharging').setAttribute('aria-pressed',mode==='discharging');$('switch').setAttribute('d',mode==='charging'?'M260 100L160 100':'M260 100L200 155');$('circuit-mode').textContent=mode==='charging'?'Charging · 6 V supply':'Discharging · supply disconnected';restart();});
  $('play').addEventListener('click',()=>{if(state.elapsed>=8*tau())restart();state.running=!state.running;$('play').textContent=state.running?'Pause':'Resume';last=0;});$('restart').addEventListener('click',restart);
+ $('slow-motion').addEventListener('click',()=>{state.speed=state.speed===1?.1:1;$('slow-motion').setAttribute('aria-pressed',state.speed===.1);$('playback-rate').textContent=state.speed===.1?'Slow motion: 0.1? per real second.':'Playback: 1? per real second.';last=0;});
  const chargePath=node('path',{d:'M620 225V360H100V100H620V205'}),dischargePath=node('path',{d:'M620 205V100H260L200 155V360H620V225'});chargePath.style.display=dischargePath.style.display='none';$('circuit').append(chargePath,dischargePath);
  const dots=Array.from({length:12},()=>{const dot=node('circle',{r:4});$('current-dots').append(dot);return dot;});
  function plates(){const svg=$('plates');svg.replaceChildren();const height=145*Math.sqrt(state.area/.1),gap=28+100*(state.spacing*1e3-.1)/9.9,left=160-gap/2,right=160+gap/2,top=100-height/2,level=voltage(state.elapsed)/SUPPLY;svg.append(node('rect',{x:left+8,y:top,width:gap-16,height,fill:state.er===1?'#f5f2ea':state.er<10?'#d7c9e8':'#d8bb8c',opacity:.8}));for(const x of [left,right])svg.append(node('rect',{x:x-6,y:top-6,width:12,height:height+12,rx:3,fill:'#748a80'}));for(let i=0;i<5;i++){const yy=top+height*(i+.5)/5;for(const [x,sign]of [[left-18,'+'],[right+18,'−']])svg.append(node('text',{x,y:yy+4,'text-anchor':'middle',fill:sign==='+'?'#b64223':'#36715e','font-size':15,opacity:level},sign));}svg.append(node('text',{x:160,y:190,'text-anchor':'middle',fill:'#686a60','font-size':12},`A = ${Math.round(state.area*1e4)} cm² · d = ${(state.spacing*1e3).toFixed(1)} mm`));svg.style.opacity=state.source==='geometry'?1:.4;}
@@ -33,7 +34,7 @@
   if(state.elapsed<=state.window){c.strokeStyle='#7c8375';c.lineWidth=1;c.beginPath();c.moveTo(x(state.elapsed),b.y);c.lineTo(x(state.elapsed),b.y+b.h);c.stroke();c.beginPath();c.fillStyle=state.mode==='charging'?'#b64223':'#36715e';c.arc(x(state.elapsed),y(voltage(state.elapsed)),5,0,Math.PI*2);c.fill();}c.restore();c.fillStyle='#695695';c.textAlign='left';c.fillText(tau()<=state.window?'τ = '+timeText(tau()):'τ = '+timeText(tau())+' (outside window — Fit 5τ)',b.x,b.y-9);
  }
  function render(){const v=voltage(state.elapsed),i=current(state.elapsed);$('voltage').textContent=v.toFixed(2)+' V';$('charge').textContent=(state.capacitance*v*1e9).toFixed(2)+' nC';$('current').textContent=(i*1e6).toFixed(3)+' μA';$('elapsed').textContent='t = '+timeText(state.elapsed);$('plate-charge').textContent=v>.1?'+   −':'';const path=state.mode==='charging'?chargePath:dischargePath,length=path.getTotalLength(),strength=Math.exp(-state.elapsed/tau());dots.forEach((dot,index)=>{const p=path.getPointAtLength(((index/dots.length+phase)%1)*length);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.setAttribute('opacity',strength<.005?0:strength);});graph();plates();}
- function step(realSeconds){if(!state.running)return;state.elapsed=Math.min(state.elapsed+realSeconds*tau(),8*tau());phase=(phase+realSeconds*.22)%1;if(state.elapsed>=8*tau()){state.running=false;$('play').textContent='Replay';}}
+ function step(realSeconds){if(!state.running)return;state.elapsed=Math.min(state.elapsed+realSeconds*state.speed*tau(),8*tau());phase=(phase+realSeconds*state.speed*.22)%1;if(state.elapsed>=8*tau()){state.running=false;$('play').textContent='Replay';}}
  function frame(now){if(last&&!document.hidden)step(Math.min((now-last)/1000,.1));last=now;render();requestAnimationFrame(frame);}document.addEventListener('visibilitychange',()=>{last=0;});update();requestAnimationFrame(frame);
  window.capacitorLab={state,tau,voltage,current,geometryCapacitance,step,constants:{EPS0,SUPPLY}};
 })();
