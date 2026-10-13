@@ -1,6 +1,12 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit. No build step or server API is needed.
+A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit, and Stellar atlas: an interactive H-R diagram. No build step or server API is needed.
+
+## Stellar atlas
+
+Open `hr/` for an interactive Hertzsprung–Russell diagram of 185 named stellar/substellar objects from Stellar Catalog and all 131 composite spectral templates in the ESO-hosted Pickles library. Hover, tap, focus a point, or use the selector for source and physical details. Search names, aliases and spectral types, or filter by source. Colours represent spectral classes, including white dwarfs and brown-dwarf types. Both axes are logarithmic; temperature decreases to the right. Dot sizes use a labelled compressed radius scale by default, with an option for exact radius proportions. Dwarfs become tiny in proportional mode; accessible hit targets and the selector keep them reachable.
+
+The named-star import is partial: 160 of 11,126 linked profile pages were retrieved before source rate limiting, yielding 198 unique components; 13 lack sufficient data to plot. The UI displays this coverage. Catalogue IDs and canonical names prevent repeated objects; shared system aliases do not merge distinct binary components. A missing T, L or R is derived from the other two and labelled. ESO luminosities and radii derive from Pickles' indicative bolometric magnitudes and calibrated temperatures. See `hr/data/SOURCES.md` for sources, formulas and reproducibility. Run `node hr/build-data.cjs` then `node hr/build-catalogue.cjs` to rebuild the bundled data. Run `tests/hr-data.cjs` and `tests/hr.cjs` with the workspace Node for data and browser checks.
 
 ## Capacitor Lab
 

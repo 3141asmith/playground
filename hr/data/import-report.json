@@ -1,0 +1,84 @@
+{
+  "retrieved": "2026-10-13",
+  "indexUrl": "https://www.stellarcatalog.com/allstars.php",
+  "indexPages": 11126,
+  "completedPages": 160,
+  "unretrievedPages": 10966,
+  "rateLimited": true,
+  "failedPages": [],
+  "rawComponents": 198,
+  "duplicateRecordsRemoved": 0,
+  "uniqueNamedObjects": 198,
+  "plottedNamedObjects": 185,
+  "omittedObjects": 13,
+  "esoTemplates": 131,
+  "totalPoints": 316,
+  "duplicates": [],
+  "omitted": [
+    {
+      "id": "100039",
+      "name": "Luhman 16 B",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "100229",
+      "name": "2MASS J1812-2608",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "100230",
+      "name": "2MASS J0429+3806",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "100108",
+      "name": "Stein 2051 B",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "102340",
+      "name": "WISE 0513+0608",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "101697",
+      "name": "G 227-28",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "100602",
+      "name": "BD+52 911 B",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "101623",
+      "name": "2MASSI J1300+1912",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "102333",
+      "name": "BD+39 2376 B",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "101711",
+      "name": "WISEA J1055-1652",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "101752",
+      "name": "HD 61606 Cb",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "101776",
+      "name": "2MASS J1007-4555",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    },
+    {
+      "id": "102334",
+      "name": "WISE 0819-0335",
+      "reason": "Insufficient positive temperature, luminosity and radius data (need any two)"
+    }
+  ]
+}
