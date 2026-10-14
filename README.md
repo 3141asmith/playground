@@ -6,7 +6,9 @@ A static home for browser experiments: electron diffraction, Quickdraw, Motion L
 
 Open `waves/` for a progressive sinusoidal transverse wave. An orange particle stays at a fixed x coordinate and oscillates vertically on a dashed guide. Other medium particles also keep their horizontal positions. Pause/play, reverse direction without a displacement jump, step through paused motion, restart, and change playback speed. Adjust amplitude, wavelength, frequency and the selected particle's x position. Wave speed and period use v = fλ and T = 1/f.
 
-The wave is y = A sin(2πx/λ − phase), with phase advancing at ±2πf per simulated second. It represents an unbounded medium without reflections or damping. Parameter edits preserve phase; restart resets phase and time while preserving controls. Hidden tabs suspend playback, and reduced-motion preferences start it paused. `tests/waves.cjs` checks propagation direction, fixed particle positions, pause/reverse/step, parameters, playback speed, mobile layout and navigation.
+Toggle **Real life** to show an illustrated water surface and a boat held at the selected horizontal position. The boat follows the surface vertically without drift or rocking; this is an idealised bobbing illustration, not a full water-wave or boat-dynamics model. Switching views preserves the wave phase and playback controls.
+
+The wave is y = A sin(2πx/λ − phase), with phase advancing at ±2πf per simulated second. It represents an unbounded medium without reflections or damping. Parameter edits preserve phase; restart resets phase and time while preserving controls. Hidden tabs suspend playback, and reduced-motion preferences start it paused. `tests/waves.cjs` checks propagation direction, fixed particle/boat positions, surface-following motion, view switching, pause/reverse/step, parameters, playback speed, mobile layout and navigation.
 
 ## Vector Lab
 
