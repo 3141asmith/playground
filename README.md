@@ -83,3 +83,5 @@ Copy `index.html`, `style.css`, and `simulation.js` from `../electron-diffractio
 For Quickdraw, run `build-pages.cjs` in `../quickdraw-viewer/` and copy the contents of its `docs/` directory into `quickdraw/`. Preserve the upstream data attribution. Full dataset files are never bundled: visitors download categories directly from Google and cache them in their browser.
 
 Project previews come from the existing workspace screenshots. The original project directories are unchanged.
+
+The water scene occasionally includes seaweed, an old boot or driftwood passing across the surface. One appears after 35-70 seconds of water playback, then leaves a 65-130 second gap before the next visitor. Debris bobs and tilts with the wave, follows the travel direction at arrival, and pauses with playback. This decorative drift also appears in the screensaver; the teaching boat still stays fixed horizontally.
