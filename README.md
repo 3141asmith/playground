@@ -1,6 +1,12 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit, and Stellar atlas: an interactive H-R diagram, and Vector Lab: draggable vectors and their resultant. No build step or server API is needed.
+A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, and Wave Lab. No build step or server API is needed.
+
+## Wave Lab
+
+Open `waves/` for a progressive sinusoidal transverse wave. An orange particle stays at a fixed x coordinate and oscillates vertically on a dashed guide. Other medium particles also keep their horizontal positions. Pause/play, reverse direction without a displacement jump, step through paused motion, restart, and change playback speed. Adjust amplitude, wavelength, frequency and the selected particle's x position. Wave speed and period use v = fλ and T = 1/f.
+
+The wave is y = A sin(2πx/λ − phase), with phase advancing at ±2πf per simulated second. It represents an unbounded medium without reflections or damping. Parameter edits preserve phase; restart resets phase and time while preserving controls. Hidden tabs suspend playback, and reduced-motion preferences start it paused. `tests/waves.cjs` checks propagation direction, fixed particle positions, pause/reverse/step, parameters, playback speed, mobile layout and navigation.
 
 ## Vector Lab
 
