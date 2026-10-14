@@ -15,5 +15,5 @@
  for(const id of ['amplitude','wavelength','frequency','position'])$(id).addEventListener('input',e=>{state[id]=Number(e.target.value);render();});$('speed').addEventListener('change',e=>{state.speed=Number(e.target.value);last=null;});$('show-particles').addEventListener('change',render);$('real-life').addEventListener('change',e=>{state.realLife=e.target.checked;view();render();});
  $('play').addEventListener('click',()=>{state.running=!state.running;last=null;render();});$('reverse').addEventListener('click',()=>{state.direction*=-1;last=null;render();});$('step').addEventListener('click',()=>{if(state.running)return;advance(1/30);render();});$('restart').addEventListener('click',()=>{state.phase=0;state.time=0;last=null;render();});
  function frame(now){if(last!==null&&state.running&&!document.hidden){advance(Math.min((now-last)/1000,.1)*state.speed);render();}last=now;requestAnimationFrame(frame);}document.addEventListener('visibilitychange',()=>{last=null;});small.addEventListener('change',layout);
- layout();requestAnimationFrame(frame);window.waveLab={state,displacement,advance,screenX,screenY};
+ layout();requestAnimationFrame(frame);window.waveLab={state,displacement,advance,screenX,screenY,render,view};
 })();
