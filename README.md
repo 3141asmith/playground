@@ -1,6 +1,10 @@
 # Playground
 
-A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit, and Stellar atlas: an interactive H-R diagram. No build step or server API is needed.
+A small, static home for experiments and projects. Includes the electron diffraction animation, browser-only Quickdraw viewer, Motion Lab: a draggable, bouncing ball with live vertical motion graphs, Moments Lab: a beam, pivot, and movable loads, and Capacitor Lab: an adjustable RC circuit, and Stellar atlas: an interactive H-R diagram, and Vector Lab: draggable vectors and their resultant. No build step or server API is needed.
+
+## Vector Lab
+
+Open `vectors/`. Drag either vector A or B to change it while holding the other fixed. Drag resultant R to change A and B by half of R's change each, preserving their difference and enforcing R = A + B. All arrows share a common origin. Component projections and a parallelogram show resolution and addition; both can be toggled. Numeric x/y inputs and focusable arrow endpoints provide keyboard access. Magnitudes and anticlockwise directions update live; a zero vector has undefined direction. Values use arbitrary units and endpoints stay within the selected grid. Reset returns to A = (4, 2), B = (−1, 3), and a ±10 grid. `tests/vectors.cjs` checks dragging, inverse adjustment, components, keyboard and mobile touch behavior.
 
 ## Stellar atlas
 
