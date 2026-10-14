@@ -50,11 +50,11 @@
  function nearest(e){const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(plot.getScreenCTM().inverse());let best=null,distance=Infinity;for(const s of visible){const d=Math.hypot(p.x-s.plotX,p.y-s.plotY);if(d<=Math.max(9,dotRadius(s.radius))&&d<distance){best=s;distance=d;}}return best;}
  plot.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const s=nearest(e),tip=$('tooltip');if(!s){tip.hidden=true;return;}select(s);tip.replaceChildren();const title=document.createElement('strong');title.textContent=s.name+' · '+(classes[s.luminosityClass]||s.type);tip.append(title,document.createTextNode(format(s.temperature)+' K · '+format(s.luminosity)+' L☉'),document.createElement('br'),document.createTextNode(format(s.radius)+' R☉ · '+s.abundance));tip.hidden=false;const rect=$('plot-wrap').getBoundingClientRect();tip.style.left=Math.max(8,Math.min(e.clientX-rect.left+14,rect.width-tip.offsetWidth-8))+'px';tip.style.top=Math.max(8,Math.min(e.clientY-rect.top+14,rect.height-tip.offsetHeight-8))+'px';});
  plot.addEventListener('pointerleave',()=>{$('tooltip').hidden=true;});plot.addEventListener('click',e=>{const s=nearest(e);if(s)select(s);});
- function finishAnimation(){cancelAnimationFrame(animationFrame);const wasPlaying=Boolean(animation);animation=null;plot.dataset.animationStage='diagram';axes.style.opacity='1';sunReference.style.display='';$('animate').textContent='Animate';$('tooltip').hidden=true;for(const s of visible)position(s,x(s.temperature),y(s.luminosity));if(wasPlaying)$('animation-status').textContent='H–R diagram: hotter to the left, more luminous towards the top.';}
+ function finishAnimation(){cancelAnimationFrame(animationFrame);const wasPlaying=Boolean(animation);animation=null;plot.dataset.animationStage='diagram';axes.style.opacity='1';sunReference.style.display='';$('animate').textContent='Animate';$('animate').setAttribute('aria-pressed','false');$('tooltip').hidden=true;for(const s of visible)position(s,x(s.temperature),y(s.luminosity));if(wasPlaying)$('animation-status').textContent='H–R diagram: hotter to the left, more luminous towards the top.';}
  function animate(){
   if(animation){finishAnimation();return;}
   if(!visible.length)return;
-  $('tooltip').hidden=true;$('animate').textContent='Skip animation';axes.style.opacity='.25';sunReference.style.display='none';
+  $('tooltip').hidden=true;$('animate').textContent='Skip animation';$('animate').setAttribute('aria-pressed','true');axes.style.opacity='.25';sunReference.style.display='none';
   // Scatter within the plotting area; these are illustrative positions, not sky coordinates.
   animation={elapsed:0,last:0,stage:'',points:visible.map(s=>({s,startX:s.plotX,startY:s.plotY,skyX:bounds.left+28+Math.random()*(bounds.right-bounds.left-56),skyY:bounds.top+28+Math.random()*(bounds.bottom-bounds.top-56)}))};
   const messages={scatter:'Mixing the stars into an illustrative night sky…',sky:'A scattered sky: random positions, not actual sky coordinates.',temperature:'Move left / right by temperature: hotter left, cooler right.',aligned:'Temperature sorted. Next, arrange the stars by luminosity.',luminosity:'Move up / down by luminosity: brighter up, fainter down.'};
@@ -67,7 +67,7 @@
    for(const p of a.points){let xx=p.skyX,yy=p.skyY;if(t<1000){const f=ease(t/1000);xx=p.startX+(p.skyX-p.startX)*f;yy=p.startY+(p.skyY-p.startY)*f;}else if(t>=2000){xx=p.skyX+(x(p.s.temperature)-p.skyX)*ease((t-2000)/2200);if(t>=4800)yy=p.skyY+(y(p.s.luminosity)-p.skyY)*ease((t-4800)/2200);}position(p.s,xx,yy);}
    animationFrame=requestAnimationFrame(frame);
   }
-  animationFrame=requestAnimationFrame(frame);
+  frame(performance.now());
  }
  $('animate').addEventListener('click',animate);
  document.addEventListener('visibilitychange',()=>{if(animation)animation.last=0;});
