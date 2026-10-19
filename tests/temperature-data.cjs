@@ -9,3 +9,16 @@ const grouped=D.aggregate(rows,'hour');assert.equal(grouped.length,2);assert.equ
 const large=Array.from({length:10000},(_,i)=>({t:i,value:i===1234?1000:2,min:i===1234?1000:2,max:i===1234?1000:2,n:1,breakBefore:i===1240})),thin=D.thin(large);assert(thin.length<=1600);assert.equal(Math.max(...thin.map(p=>p.max)),1000);assert(thin.some(p=>p.breakBefore));assert.equal(thin.reduce((n,p)=>n+p.n,0),large.length);
 assert.equal(D.parse('2026-01-01T12:00, 10\n"2026-01-01 13:00:00", "50 F"').rows.length,2);
 console.log('PASS log parsing, Fahrenheit, invalid dates, duplicate policy, calendar ranges, statistics, gaps, aggregation and spike-preserving chart reduction');
+const H=3600000,near=(actual,expected)=>assert(Math.abs(actual-expected)<1e-8,`${actual} != ${expected}`);
+const ramp=[{t:0,value:0},{t:H,value:20},{t:2*H,value:0},{t:10*H,value:100}],a=D.analysis(ramp,{from:0,to:D.DAY,cadence:H,lower:5,upper:15,windowMinutes:60});
+near(a.covered,2*H);near(a.unknown,22*H);near(a.coverage,1/12);near(a.weightedMean,10);near(a.above,.5*H);near(a.below,.5*H);near(a.between,H);assert.equal(a.gaps,1);assert.equal(a.excluded,8*H);assert.equal(a.expected,24);near(a.warming.rate,20);near(a.cooling.rate,-20);assert.equal(a.rateWindows,2);near(a.p5,0);near(a.p95,88);
+const clipped=D.analysis(ramp,{from:.5*H,to:1.5*H,cadence:H,lower:5,upper:15});near(clipped.covered,H);near(clipped.weightedMean,15);near(clipped.above,.5*H);
+const irregular=D.analysis([{t:0,value:0},{t:H,value:20},{t:3*H,value:20}],{lower:10,upper:15});near(irregular.weightedMean,50/3);near(irregular.below,.5*H);near(irregular.above,2.25*H);
+const single=D.analysis([{t:0,value:10}],{from:0,to:D.DAY});assert.equal(single.weightedMean,null);assert.equal(single.above,null);assert.equal(single.coverage,0);assert.equal(single.highTime,null);assert.equal(single.dailyTrend,null);assert.equal(single.meanDailyRange,null);
+const flat=D.analysis([{t:0,value:10},{t:H,value:10}],{lower:10,upper:10});assert.equal(flat.above,0);assert.equal(flat.below,0);assert.equal(flat.between,H);assert.equal(flat.highTime,null);assert.equal(flat.warming,null);assert.equal(flat.cooling,null);
+const invalidThreshold=D.analysis(ramp,{lower:20,upper:10});assert(!invalidThreshold.thresholdsValid);assert.equal(invalidThreshold.above,null);assert.notEqual(invalidThreshold.weightedMean,null);
+const base=Date.UTC(2026,0,5),trendRows=[];for(let day=0;day<14;day++){trendRows.push({t:base+day*D.DAY,value:9+2*day},{t:base+day*D.DAY+12*H,value:11+2*day});}const trend=D.analysis(trendRows);
+near(trend.dailyTrend.slope,2);near(trend.weeklyTrend.slope*7,14);near(trend.dailyTrend.r2,1);near(trend.meanDailyRange,2);assert.equal(trend.timingDayCount,14);near(trend.highTime,12*H);near(trend.lowTime,0);assert.equal(trend.largestDailyRange.t,base);
+const midnight=D.circularTime([23*H,H]);near(Math.min(midnight,D.DAY-midnight),0);assert.equal(D.circularTime([0,12*H]),null);assert.equal(D.analysis([]),null);
+const sparse=D.analysis([{t:0,value:0},{t:10*H,value:10}],{cadence:H,windowMinutes:15});assert.equal(sparse.covered,0);assert.equal(sparse.warming,null);assert.equal(sparse.rateWindows,0);
+console.log('PASS threshold crossings/equality, clipped intervals, excluded gaps, percentiles, time weighting, completeness, rolling rates, daily/weekly trends, extreme times, circular midnight means, flat/single/sparse data');
