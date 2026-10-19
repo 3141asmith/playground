@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),D=require('../temperature/data.js');
+const text='\uFEFFtimestamp,temperature_c\n2026-02-28 23:59:00, -4.5 C\n2026-03-01 00:00:00, 32 F\n2026-03-01 00:00:00, 1 C\n2026-02-30 12:00:00, 10 C\n2026-03-01 25:00:00, 10 C\nnot a reading\n2026-03-01 01:00:00, -274 C\n';
+const parsed=D.parse(text);assert.equal(parsed.rows.length,3);assert.equal(parsed.skipped,4);assert.equal(parsed.header,1);assert.equal(parsed.rows[1].value,0);
+const merged=D.merge(parsed.rows);assert.equal(merged.duplicates,1);assert.equal(merged.conflicts,1);assert.equal(merged.rows[1].value,1);assert(merged.rows[0].t<merged.rows[1].t);
+assert(Number.isNaN(D.timestamp('2026-02-29 12:00:00')));assert(Number.isFinite(D.timestamp('2024-02-29 12:00:00')));
+const iso=t=>new Date(t).toISOString();assert.deepEqual(D.range('week','2026-10-18').map(iso),['2026-10-12T00:00:00.000Z','2026-10-19T00:00:00.000Z']);assert.deepEqual(D.range('month','2024-02-29').map(iso),['2024-02-01T00:00:00.000Z','2024-03-01T00:00:00.000Z']);assert.deepEqual(D.range('year','2026-10-18').map(iso),['2026-01-01T00:00:00.000Z','2027-01-01T00:00:00.000Z']);assert.equal(D.range('custom',null,'2026-10-18','2026-10-18')[1]-D.range('custom',null,'2026-10-18','2026-10-18')[0],D.DAY);
+const rows=[{t:0,value:0},{t:60000,value:2},{t:120000,value:4},{t:3600000,value:6}],s=D.stats(rows);assert.equal(s.mean,3);assert.equal(s.median,3);assert.equal(s.sd,Math.sqrt(5));assert.equal(s.gaps,1);assert.equal(s.cadence,60000);assert.equal(D.stats([]),null);assert.equal(D.stats([rows[0]]).cadence,null);
+const grouped=D.aggregate(rows,'hour');assert.equal(grouped.length,2);assert.equal(grouped[0].value,2);assert.equal(grouped[0].min,0);assert.equal(grouped[0].max,4);
+const large=Array.from({length:10000},(_,i)=>({t:i,value:i===1234?1000:2,min:i===1234?1000:2,max:i===1234?1000:2,n:1,breakBefore:i===1240})),thin=D.thin(large);assert(thin.length<=1600);assert.equal(Math.max(...thin.map(p=>p.max)),1000);assert(thin.some(p=>p.breakBefore));assert.equal(thin.reduce((n,p)=>n+p.n,0),large.length);
+assert.equal(D.parse('2026-01-01T12:00, 10\n"2026-01-01 13:00:00", "50 F"').rows.length,2);
+console.log('PASS log parsing, Fahrenheit, invalid dates, duplicate policy, calendar ranges, statistics, gaps, aggregation and spike-preserving chart reduction');

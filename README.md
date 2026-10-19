@@ -1,6 +1,14 @@
 # Playground
 
-A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, and Wave Lab. No build step or server API is needed.
+A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab and Temperature Explorer. No build step or server API is needed.
+
+## Temperature Explorer
+
+Open `temperature/` and choose or drop TXT/CSV logs. The supplied example format is `2026-05-26 09:55:01, 24.80 C`; ISO date/time plus a number is required, with optional C/°C or F/°F (converted to Celsius). Unlabelled values are Celsius. CSV headers `timestamp,temperature_c` and `datetime,temperature` are accepted, along with comma, semicolon or tab separators. Invalid dates, malformed lines and temperatures below absolute zero are skipped and reported with example line numbers. Multiple selected files are merged, sorted, and deduplicated by timestamp; the last occurrence wins, with conflicts reported. Files replace the current dataset. Limits are 50 MB per file and 100 MB per selection. Processing stays in memory in the browser: no uploads or storage. The public example and homepage preview use generated data; the user's log is not included in the repository.
+
+Choose all data, a day, a Monday–Sunday week, a calendar month/year, or inclusive custom dates. Previous/next buttons move calendar periods. All timestamps are interpreted as written using a neutral UTC coordinate, with no viewer-timezone or daylight-saving conversion. Summary cards show reading-weighted mean, min/max and their timestamps, median, population standard deviation and count. Diagnostics include the typical sampling interval, gaps above three times the median interval, and the largest interval. Missing readings are not imputed. Statistics always use all selected readings, regardless of chart resolution.
+
+The main graph offers individual readings and hourly/daily/monthly averages, an extrema envelope, range-average line and pointer/keyboard-slider inspection. Automatic resolution adapts to the selected data span. Large plots are reduced into at most 1,600 time buckets while preserving extremes. A second graph groups readings by hour of day, and a paginated table gives daily mean/min/max/count. Export the selected readings or daily summaries as CSV, or save the graph as a standalone SVG. `tests/temperature-data.cjs` tests parsing, date boundaries, statistics and chart reduction. `tests/temperature.cjs` verifies the supplied 202,611-reading log, date filters, exports, multiple-file import, invalid-file recovery, mobile layout and navigation; it reads the original file from Downloads for local testing and never copies it into the site.
 
 ## Wave Lab
 
