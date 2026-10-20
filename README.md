@@ -96,6 +96,8 @@ The distance graph measures ball centre height above the floor. Velocity and acc
 
 ## Preview
 
+The AQA Physics area includes expanded teaching notes adapted from the supplied A_Level_Physics_Notes.docx (lesson sheets credit N. Dwyer): 32 expanded core lessons, 32 additional worked examples and 32 explanation checks. A searchable index maps all 78 historical chapters into the current topic structure. See `physics/NOTES.md` for provenance, review corrections and checks; `physics/notes.js` holds the adapted content and chapter mapping.
+
 Serve this folder with any static web server. From the workspace:
 
 ```powershell
