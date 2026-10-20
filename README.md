@@ -1,6 +1,14 @@
 # Playground
 
-A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab and Temperature Explorer. No build step or server API is needed.
+A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab, Temperature Explorer and Computer Science. No build step or server API is needed.
+
+## Computer Science — SLR 9
+
+`computer-science/` is a course entry page with one available unit: `slr-09/`, covering the four Craig 'n' Dave SLR 9 groups and OCR H446 1.3.1(a–d). Topic grouping was checked against [Craig 'n' Dave's SLR 9 listing](https://craigndave.org/video-categories/slr-9-compression-encryption-and-hashing/) and the [OCR specification](https://www.ocr.org.uk/images/170844-specification-accredited-a-level-gce-computer-science-h446.pdf). Explanations, visual activities and practice questions are original, with no copied lesson materials or affiliation implied. Other SLRs are not implemented.
+
+Four keyboard-accessible lesson tabs cover lossy/lossless compression with a live RGB precision experiment; editable step/play/pause RLE traces and dictionary coding; symmetric/asymmetric message encryption with animated transmission and unrelated-key rejection; and actual SHA-256 comparisons plus a toy collision/chaining hash table. Revision includes eight original multiple-choice questions with explanations, two written-answer prompts and session-only reviewed-topic progress. All processing stays in the browser. Messages, keys, answers and progress are not uploaded or persisted.
+
+Models state their storage assumptions. The RGB experiment measures a quantised raw payload, not an actual JPEG. RLE uses 8-bit counts and 8-bit ASCII symbols and splits runs above 255. The dictionary model preserves spaces/punctuation, uses first-occurrence entries, fixed-width stream codes, 16-bit entry-length prefixes and a 32-bit header. Dictionary costs are included before calculating savings. Encryption uses temporary AES-GCM 256-bit keys with fresh 96-bit IVs, or RSA-OAEP 2048-bit keys with SHA-256, through Web Crypto on HTTPS/localhost. Input is limited to 160 UTF-8 bytes. These are short-message illustrations; key authentication, hybrid encryption and suitable password hashing are explained separately. The hash-table rule is explicitly non-cryptographic. Animations pause when leaving the lesson or hiding the tab; reduced-motion mode suppresses the packet animation. `tests/slr9-models.cjs` checks numerical/storage models; `tests/slr9.cjs` verifies the activities, actual encryption recovery and wrong-key rejection, SHA-256 vectors, quiz, accessibility controls, privacy and mobile layout.
 
 ## Temperature Explorer
 

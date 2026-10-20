@@ -1,0 +1,10 @@
+(function(root){
+ 'use strict';
+ const ascii=text=>/^[\x20-\x7e]*$/.test(text);
+ function rle(text){if(!ascii(text))throw Error('Use printable ASCII characters (letters, numbers, spaces and punctuation).');const runs=[];for(const symbol of text){const last=runs.at(-1);if(last?.symbol===symbol&&last.count<255)last.count++;else runs.push({symbol,count:1,start:runs.reduce((n,r)=>n+r.count,0)});}return {runs,decoded:runs.map(r=>r.symbol.repeat(r.count)).join(''),originalBits:text.length*8,encodedBits:runs.length*16};}
+ function dictionary(text){if(!ascii(text))throw Error('Use printable ASCII characters for this storage model.');const tokens=text.match(/ +|[A-Za-z0-9]+|[^A-Za-z0-9 ]/g)||[],entries=[],codes=tokens.map(token=>{let index=entries.indexOf(token);if(index===-1){index=entries.length;entries.push(token);}return index;}),width=Math.max(1,Math.ceil(Math.log2(entries.length||1))),dictionaryBits=entries.reduce((n,t)=>n+16+t.length*8,0),headerBits=32,streamBits=codes.length*width;return {tokens,entries,codes,width,dictionaryBits,headerBits,streamBits,originalBits:text.length*8,encodedBits:headerBits+dictionaryBits+streamBits,decoded:codes.map(c=>entries[c]).join('')};}
+ function quantise(value,bits){const step=255/(2**bits-1);return Math.round(Math.round(value/step)*step);}
+ function bitDifference(a,b){let count=0;for(let i=0;i<a.length;i++){let value=a[i]^b[i];while(value){count+=value&1;value>>>=1;}}return count;}
+ function buckets(text){const result=Array.from({length:10},()=>[]);for(const key of text.split(',').map(s=>s.trim()).filter(Boolean)){if(!ascii(key))throw Error('Use printable ASCII keys in this toy model.');if(result.some(bucket=>bucket.includes(key)))continue;const index=[...key].reduce((sum,c)=>sum+c.charCodeAt(0),0)%10;result[index].push(key);}return result;}
+ const api={ascii,rle,dictionary,quantise,bitDifference,buckets};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.SLR9=api;
+})(typeof window==='undefined'?globalThis:window);

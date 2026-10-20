@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html style.css favicon.svg .nojekyll _site/
-          cp -r assets electron quickdraw ball moments capacitor hr vectors waves temperature _site/
+          cp -r assets electron quickdraw ball moments capacitor hr vectors waves temperature computer-science _site/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
