@@ -1,5 +1,11 @@
 # Playground
 
+## School days
+
+Open `school-days/` for a date countdown based on the supplied Mayfield 2026–2027 term calendar, with milestone shortcuts, an optional custom starting date, a colour-coded calendar and the original PDF. The count excludes the starting date and includes the target date. Normal lessons are assumed to be weekdays within the six published half terms; the 3 May exeat closure is excluded and compulsory Saturday 26 June Mayfield Day is included. The 7 September pupil induction is optional. Early finishes count as whole school days. Staff-only days, boarder arrivals and individual exam leave do not add pupil days. Unsupported dates produce an explanation rather than an estimated total. Today follows Europe/London and refreshes across midnight. No external service or build step is needed.
+
+Run `node tests/school-days.cjs` for date-boundary checks. With `serve.cjs` running, `node tests/school-days-browser.cjs` verifies the controls, Saturday event, invalid dates and responsive layouts using the local Playwright/Edge installation; it also regenerates the homepage preview.
+
 A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab, Temperature Explorer, Computer Science and AQA Physics. No build step or server API is needed.
 
 ## AQA A Level Physics — compulsory content

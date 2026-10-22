@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Count the school days until your next milestone using Mayfield’s 2026–2027 term dates.">
+  <title>School days · Playground</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="style.css">
+  <script defer src="calendar.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+  <header><a href="../">← playground.</a><span>MAYFIELD · 2026–2027</span></header>
+  <main>
+    <section class="intro"><p class="eyebrow">A LITTLE SOMETHING TO LOOK FORWARD TO</p><h1>Make the days <em>count.</em></h1><p>Pick a date. See how many school days stand between you and then.</p></section>
+    <section class="workspace" aria-label="School day countdown">
+      <div class="controls"><label for="target">I’m counting down to</label><input type="date" id="target" min="2026-09-07" max="2027-07-08"><div id="presets" class="presets" aria-label="Quick dates"></div><label class="check"><input type="checkbox" id="induction"> Include 7 September induction (Years 7, 9 &amp; 12)</label><p class="hint">From today in London. Today is excluded; your chosen date is included.</p><details><summary>Use a different starting date</summary><label for="from">Count after</label><input id="from" type="date" min="2026-09-07" max="2027-07-08"><button id="reset" type="button">Reset to today</button></details></div>
+      <div class="result" aria-live="polite" aria-atomic="true"><p class="eyebrow" id="result-label">YOUR COUNTDOWN</p><div id="number">—</div><h2 id="unit">school days to go</h2><p id="range"></p><div class="stats" id="stats"></div><p id="message"></p></div>
+    </section>
+    <section class="calendar-section"><div class="section-top"><div><p class="eyebrow">THE DAYS IN BETWEEN</p><h2>Your countdown, at a glance.</h2></div><div class="legend"><span><i class="school"></i>School</span><span><i class="special"></i>Mayfield Day</span><span><i class="holiday"></i>Holiday</span><span><i class="weekend"></i>Weekend</span></div></div><p class="hint">Highlighted dates fall within your countdown. Select a day to see its details.</p><p id="day-detail" role="status">Choose a date in the calendar below.</p><div id="months"></div></section>
+    <details class="notes"><summary>What’s included in the count?</summary><p>Based on the supplied Mayfield 2026–2027 academic term dates (updated 18 October 2024). Normal school days are assumed to be Monday to Friday during term. Saturday 26 June, compulsory Mayfield Day / Prize Giving, is included.</p><p>Monday 3 May is excluded for the exeat closure. Staff INSET, induction for new staff, staff retreat and boarder arrival days are excluded. Pupil induction on 7 September is optional above. Term-ending and half-term-ending days count as whole school days, including early finishes.</p><p>This uses the general pupil timetable. Individual exam leave for Years 11 and 13 and the unconfirmed exam contingency date are not modelled. Regular Saturday lessons are not specified in the document and are not assumed.</p><a href="term-dates.pdf" download>Download the supplied term dates (PDF) ↓</a><div id="term-list"></div></details>
+  </main><footer>One day at a time. <a href="../">Back to playground ↗</a></footer>
+</body></html>
