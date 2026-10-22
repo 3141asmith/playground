@@ -10,6 +10,39 @@ for (const [name,key] of milestones) {
   const button = document.createElement('button'); button.type='button'; button.textContent=name;
   button.addEventListener('click',()=>{$('target').value=key;render();}); $('presets').append(button);
 }
+const examPapers = [
+  ['A Level Physics · Paper 1', '2027-05-21', 'AM', '7408/1'],
+  ['A Level Physics · Paper 2', '2027-05-27', 'PM', '7408/2'],
+  ['A Level Physics · Paper 3', '2027-06-08', 'AM', '7408/3'],
+  ['GCSE Physics · Paper 1', '2027-05-25', 'AM', '8463/1F & 1H'],
+  ['GCSE Physics · Paper 2', '2027-06-18', 'AM', '8463/2F & 2H']
+];
+const examSection = document.createElement('section');
+examSection.className = 'exam-shortcuts';
+examSection.setAttribute('aria-label', 'AQA Physics exam dates 2027');
+const examHeading = document.createElement('h2');
+examHeading.textContent = 'AQA Physics exams · 2027';
+examSection.append(examHeading);
+for (const [name,key,session,code] of examPapers) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = `${name} · ${format(key)} · ${session}`;
+  button.title = code;
+  button.addEventListener('click', () => { $('target').value = key; render(); });
+  examSection.append(button);
+}
+const examNote = document.createElement('p');
+examNote.className = 'hint';
+examNote.textContent = 'GCSE dates cover both Foundation and Higher tiers (separate Physics). Exam day is included in the countdown. Dates checked 22 October 2026. Sources: ';
+for (const [name,url] of [
+  ['AQA A Level', 'https://www.aqa.org.uk/subjects/physics/a-level/physics-7408/key-dates'],
+  ['AQA GCSE', 'https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/key-dates']
+]) {
+  const link = document.createElement('a'); link.textContent = name; link.href = url;
+  examNote.append(link, ' ');
+}
+examSection.append(examNote);
+$('presets').after(examSection);
 function render() {
   const from=$('from').value, to=$('target').value, induction=$('induction').checked;
   let valid=false;

@@ -9,6 +9,13 @@ const path=require('node:path');
   await page.clock.install({time:new Date('2026-10-22T10:00:00Z')});
   const response=await page.goto('http://127.0.0.1:4185/playground/school-days/');assert.equal(response.status(),200);
   assert.equal(await page.locator('#number').textContent(),'1');
+  const papers=[['A Level Physics · Paper 1','2027-05-21'],['A Level Physics · Paper 2','2027-05-27'],['A Level Physics · Paper 3','2027-06-08'],['GCSE Physics · Paper 1','2027-05-25'],['GCSE Physics · Paper 2','2027-06-18']];
+  for(const [name,date] of papers){
+   await page.getByRole('button',{name:new RegExp(name)}).click();
+   assert.equal(await page.locator('#target').inputValue(),date);
+   assert(Number(await page.locator('#number').textContent())>0);
+  }
+  await page.getByRole('button',{name:'Autumn half term',exact:true}).click();
   await page.screenshot({path:path.resolve(__dirname,'../assets/school-days.png')});
   await page.getByRole('button',{name:'Christmas',exact:true}).click();
   assert.equal(await page.locator('.month').count(),3);
