@@ -9,7 +9,6 @@
 <body>
   <header><a href="../">← playground.</a><span>MAYFIELD · 2026–2027</span></header>
   <main>
-    <section class="intro"><p class="eyebrow">A LITTLE SOMETHING TO LOOK FORWARD TO</p><h1>Make the days <em>count.</em></h1><p>Pick a date. See how many school days stand between you and then.</p></section>
     <section class="workspace" aria-label="School day countdown">
       <div class="controls"><label for="target">I’m counting down to</label><input type="date" id="target" min="2026-09-07" max="2027-07-08"><div id="presets" class="presets" aria-label="Quick dates"></div><label class="check"><input type="checkbox" id="induction"> Include 7 September induction (Years 7, 9 &amp; 12)</label><p class="hint">From today in London. Today is excluded; your chosen date is included.</p><details><summary>Use a different starting date</summary><label for="from">Count after</label><input id="from" type="date" min="2026-09-07" max="2027-07-08"><button id="reset" type="button">Reset to today</button></details></div>
       <div class="result" aria-live="polite" aria-atomic="true"><p class="eyebrow" id="result-label">YOUR COUNTDOWN</p><div id="number">—</div><h2 id="unit">school days to go</h2><p id="range"></p><div class="stats" id="stats"></div><p id="message"></p></div>
