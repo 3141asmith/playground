@@ -1,6 +1,14 @@
 # Audio Lab
 
-Static, real-codec comparisons of one 16-second stereo piano recording. All 44 variants are bundled (about 17.25 MB total). Only the source and selected version are initially fetched; a six-entry decode cache bounds memory use. There is no runtime encoder, microphone permission, upload or server API.
+Static, real-codec comparisons of one 16-second stereo piano recording, plus a browser-generated experimental PCM mode. All 44 preset variants are bundled (about 17.25 MB total). Only the source and selected version are initially fetched; a six-entry decode cache bounds memory use. There is no runtime MP3/AAC encoder, microphone permission, upload or server API.
+
+## Test mode
+
+Choose **Test / experimental PCM** or **Test your own settings**. Numeric fields and logarithmic sliders cover 100–192,000 Hz; bit depth covers 1–24 bits. Stereo PCM bitrate follows sample rate × bit depth × 2, from 0.2 to 9,216 kbps across the full range. Editing bitrate adjusts sample rate at the current bit depth; values clamp to the achievable range. Settings update after a short debounce.
+
+`test-signal.js` uses a Blackman-windowed sinc/polyphase low-pass resampler, followed by uniform midrise quantisation without dither or volume normalisation. A worker keeps processing off the UI thread and is cancelled when superseded. For playback, the experimental signal is reconstructed at 44.1 kHz, including rates below the browser's minimum AudioBuffer rate. The graphs use the actual experimental samples, not the reconstructed playback samples. Duration, pitch, stereo separation, A/B position and shared volume are preserved. Higher settings add no source detail.
+
+This is a sampling/quantisation demonstration, not a simulation of a particular compressed codec. The size is a theoretical tightly packed PCM payload, excluding headers; it is labelled as an estimate. Test mode has no file download. Real preset-file downloads and exact-lossless classifications remain separate.
 
 ## Source and rights
 
@@ -38,5 +46,7 @@ The overview uses left-channel min/max envelopes. The close-up plots decoded sam
 
 - `tests/audio-models.cjs`: all 44 files/sizes/identities, source hash, PCM formula, lossy-vs-lossless classification including reduced-rate FLAC, option compatibility and a known-amplitude sine FFT.
 - `tests/audio.cjs`: real decode/playback, same-position A/B, seek/pause/restart, every encoding option, independent browser FLAC/WAV sample equality, download, lower-rate labels, mobile plots, decode-failure recovery and no POST requests.
+- `tests/audio-test-models.cjs`: extreme rates, quantisation levels/error bounds, anti-alias rejection, pitch/timing/level preservation, stereo independence and bitrate limits.
+- `tests/audio-test.cjs`: experimental controls and playback, extreme settings, bitrate linkage, estimates, A/B position, worker cancellation, preset restoration and mobile layout.
 
 Browser checks use workspace Playwright and Edge. Serve Playground locally or set `PLAYGROUND_URL` to test a deployment. Audio output is exercised through the browser; the checks do not claim a physical speaker or headphone listening test.
