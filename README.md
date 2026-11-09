@@ -131,3 +131,9 @@ For Quickdraw, run `build-pages.cjs` in `../quickdraw-viewer/` and copy the cont
 Project previews come from the existing workspace screenshots. The original project directories are unchanged.
 
 The water scene occasionally includes seaweed, an old boot or driftwood passing across the surface. One appears after 35-70 seconds of water playback, then leaves a 65-130 second gap before the next visitor. Debris bobs and tilts with the wave, follows the travel direction at arrival, and pauses with playback. This decorative drift also appears in the screensaver; the teaching boat still stays fixed horizontally.
+
+## Revolve Lab
+
+Open `revolve/` to draw a polygon on a snapping grid (0.5, 1, 2 or 5 mm), edit or drag vertices, move the vertical centre line and preview its solid of revolution. Close a profile with the first vertex or Revolve outline. Undo/redo covers geometry edits. Keyboard and numeric controls provide alternatives to dragging. The 3D view supports orbit, zoom, wireframe, auto rotation and a pausable revolution animation. Cylinder, cone, hollow-tube and vase presets illustrate different profiles.
+
+Simple non-self-intersecting outlines must lie on one side of the axis; touching it is allowed. Crossing or overlapping outlines produce an explanation instead of a misleading solid. Geometry uses model millimetres, with exact polygon/frustum formulas for volume and surface area, including the two cut faces in a partial revolution. WebGL renders a 96-segment full sweep with concave cut-face triangulation; a Canvas renderer is available without WebGL. No external geometry library, API or upload is required. `tests/revolve-models.cjs` checks analytic values, invariants and validation; `tests/revolve.cjs` checks editing, live results, animation, 3D controls, mobile and fallback rendering.
