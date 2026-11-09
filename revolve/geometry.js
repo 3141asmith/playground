@@ -40,5 +40,35 @@
   return{positions,normals,lines,metrics,scale,axisLine:[0,-metrics.height/(2*scale)-.18,0,0,metrics.height/(2*scale)+.18,0]};
  }
  const presets={cylinder:[{x:0,y:0},{x:10,y:0},{x:10,y:20},{x:0,y:20}],cone:[{x:0,y:0},{x:12,y:0},{x:0,y:24}],tube:[{x:5,y:0},{x:10,y:0},{x:10,y:18},{x:5,y:18}],vase:[{x:0,y:0},{x:9,y:0},{x:10,y:2},{x:8,y:6},{x:6,y:10},{x:6,y:14},{x:9,y:18},{x:7.5,y:18},{x:4.5,y:14},{x:4.5,y:10},{x:6.5,y:6},{x:8,y:2},{x:0,y:2}]};
- return{validate,triangulate,measures,mesh,presets,signedArea,MAX_POINTS};
+ // Printing uses original millimetres and a Z-up frame with its base at Z=0.
+ // Build separately from the normalised display mesh so camera zoom never changes scale.
+ function printableMesh(points,axis=0,degrees=360){
+  const error=validate(points,axis);if(error)throw Error(error);
+  if(!Number.isFinite(degrees)||degrees<=0||degrees>360)throw Error('Choose a revolution greater than 0° and no more than 360°.');
+  const minY=Math.min(...points.map(p=>p.y));
+  const profile=points.map(p=>({x:Math.abs(p.x-axis),y:p.y-minY}));
+  if(signedArea(profile)<0)profile.reverse();
+  // Keep cap and swept-surface boundaries identical: no collinear cap T-junctions.
+  let changed=true;while(changed&&profile.length>3){changed=false;for(let i=0;i<profile.length;i++){if(Math.abs(cross(profile[(i+profile.length-1)%profile.length],profile[i],profile[(i+1)%profile.length]))<EPS){profile.splice(i,1);changed=true;break;}}}
+  const vertices=[],triangles=[],lookup=new Map(),full=degrees===360,segments=Math.max(1,Math.ceil(degrees)),radians=degrees*Math.PI/180;
+  const vertex=p=>{const q=p.map(n=>Math.fround(n)||0);if(!q.every(Number.isFinite))throw Error('The solid has an invalid coordinate.');const key=q.join(',');if(!lookup.has(key)){lookup.set(key,vertices.length);vertices.push(q);}return lookup.get(key);};
+  const rings=profile.map(p=>Array.from({length:segments+1},(_,j)=>{const t=full&&j===segments?0:j/segments*radians;return vertex([p.x*Math.cos(t),p.x*Math.sin(t),p.y]);}));
+  const tri=(a,b,c)=>{if(a===b||b===c||c===a)return;triangles.push([a,b,c]);};
+  for(let i=0;i<profile.length;i++){const k=(i+1)%profile.length;for(let j=0;j<segments;j++){const p=rings[i][j],q=rings[k][j],r=rings[k][j+1],s=rings[i][j+1];tri(p,r,q);tri(p,s,r);}}
+  if(!full)for(const [a,b,c]of triangulate(profile)){tri(rings[a][0],rings[b][0],rings[c][0]);tri(rings[c][segments],rings[b][segments],rings[a][segments]);}
+  // Check the actual float32 vertices that STL will store, including seam and axis welds.
+  const edges=new Map(),incident=vertices.map(()=>[]),adjacent=triangles.map(()=>[]);
+  triangles.forEach((t,face)=>{for(let i=0;i<3;i++){const a=t[i],b=t[(i+1)%3],key=a<b?`${a}:${b}`:`${b}:${a}`;incident[a].push(face);if(!edges.has(key))edges.set(key,{a,b,face,count:1});else{const e=edges.get(key);if(e.count!==1||e.a!==b||e.b!==a)throw Error('This outline produces a non-manifold solid. Move vertices away from isolated contacts with the centre line.');e.count++;adjacent[e.face].push(face);adjacent[face].push(e.face);}}});
+  if([...edges.values()].some(e=>e.count!==2))throw Error('The solid could not be closed for printing. Adjust the outline or revolution angle.');
+  // An edge-closed mesh may still have two shells pinched together at one vertex.
+  incident.forEach((faces,id)=>{if(!faces.length)return;const seen=new Set([faces[0]]),pending=[faces[0]];while(pending.length){for(const next of adjacent[pending.pop()])if(!seen.has(next)&&triangles[next].includes(id)){seen.add(next);pending.push(next);}}if(seen.size!==faces.length)throw Error('The solid pinches to a point on the centre line. Move that vertex off the line or remove the pinch before exporting.');});
+  return{vertices,triangles};
+ }
+ function stl(points,axis=0,degrees=360){
+  const {vertices,triangles}=printableMesh(points,axis,degrees),buffer=new ArrayBuffer(84+50*triangles.length),data=new DataView(buffer);
+  const label='Playground Revolve Lab | millimetres | Z up | base Z=0';for(let i=0;i<label.length;i++)data.setUint8(i,label.charCodeAt(i));data.setUint32(80,triangles.length,true);
+  triangles.forEach((ids,i)=>{const [a,b,c]=ids.map(id=>vertices[id]),u=b.map((n,j)=>n-a[j]),v=c.map((n,j)=>n-a[j]),normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],length=Math.hypot(...normal);if(!length)throw Error('A face is too small to export. Increase the angle or adjust the outline.');const values=[...normal.map(n=>n/length),...a,...b,...c];values.forEach((n,j)=>data.setFloat32(84+i*50+j*4,n,true));});
+  return buffer;
+ }
+ return{validate,triangulate,measures,mesh,printableMesh,stl,presets,signedArea,MAX_POINTS};
 });
