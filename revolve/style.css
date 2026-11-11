@@ -6,3 +6,5 @@
 .mode-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin:0 0 24px;padding:18px 22px;border:1px solid var(--line);border-radius:10px;background:#fcfbf6}.mode-toolbar label{font-size:12px;color:var(--green)}.mode-toolbar select{max-width:100%;font-size:12px}.mode-toolbar p{font-size:11px;margin:0;flex:1;min-width:180px}@media(max-width:480px){.mode-toolbar{padding:16px}.mode-toolbar select{width:100%}}
 
 .symmetry-settings{margin-top:18px;padding:24px}.symmetry-settings h2{font-size:23px}.symmetry-settings .hint{margin-bottom:14px}.symmetry-settings button{width:100%}@media(max-width:480px){.symmetry-settings{padding:18px}}
+
+.detail-buttons{display:flex;flex-wrap:wrap;gap:7px}.detail-buttons button{width:auto;flex:1 1 95px}#keep-symmetry{margin-top:10px}#keep-status:empty{display:none}

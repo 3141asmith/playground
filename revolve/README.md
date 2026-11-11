@@ -1,5 +1,15 @@
 # Revolve Lab
 
+## Keep a rotational shape for free editing
+
+Use **Keep shape & edit freely**, or choose **None / edit freely** while symmetry is active. The complete merged result is retained, symmetry turns off, and subsequent edits affect only the selected outline. The retained geometry uses the export's finer 0.01 mm curve approximation without snapping generated vertices to the drawing grid. Existing curves become editable straight segments along that approximation. New curves and vertex moves still use the normal editor tools and grid snapping.
+
+Holes and disconnected components are retained. **Edit outline** selects a shape boundary or one of its cut-outs. **Add shape** draws an additional region that joins existing material where it overlaps; **Add cut-out** removes material from the selected shape. Close the new outline before switching outlines or exporting. **Remove outline** removes the selected cut-out or the selected shape and its cut-outs. A cut-out outside its parent never adds material. Preview, dimensions and STL reflect the complete collection, not just the selected outline.
+
+Undo restores the original seed and rotational settings; redo restores the retained result, including all independent edits. Clear or choosing a preset starts a fresh outline. Retained collections stay in extrusion mode; undo or start a fresh shape to use revolution again. Up to 4096 editable vertices per retained boundary are supported, so generated outlines do not inherit the 80-anchor seed limit.
+
+`tests/retained-models.cjs` audits preservation of dimensions, volume, holes and disconnected parts, cut-out operations, large contours, curves and closed STL files. `tests/retained.cjs` verifies retention by button and symmetry-off selection, asymmetric vertex edits and additions, export, removal, undo/redo and mobile layout.
+
 ## Rotational symmetry
 
 In extrusion mode, choose **Rotational symmetry** in **Find your symmetry**, then set an integer order from 2 to 24. Order N repeats the seed outline every 360/N degrees. **None** keeps the original outline. The numbered outline remains editable with the normal snapped vertex and Bézier tools; pale copies and radial guides follow it. Rotation is calculated before polygon operations rather than snapping copies back onto the rectangular grid. A seed may already have additional rotational symmetry.

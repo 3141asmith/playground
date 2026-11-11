@@ -4,12 +4,12 @@
  const lineControls=(a,b)=>({c1:{x:a.x+(b.x-a.x)/3,y:a.y+(b.y-a.y)/3},c2:{x:a.x+2*(b.x-a.x)/3,y:a.y+2*(b.y-a.y)/3}});
  const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
  function bezier(a,c1,c2,b,t){const p=lerp(a,c1,t),q=lerp(c1,c2,t),r=lerp(c2,b,t);return lerp(lerp(p,q,t),lerp(q,r,t),t);}
- function checkControls(points){for(const p of points)if(p.curve)for(const key of ['c1','c2']){const c=p.curve[key];if(!c||!Number.isFinite(c.x)||!Number.isFinite(c.y)||Math.abs(c.x)>1000||Math.abs(c.y)>1000)throw Error('Use finite Bézier handle coordinates between −1000 and 1000 mm.');}}
+ function checkControls(points,coordinateLimit=1000){for(const p of points)if(p.curve)for(const key of ['c1','c2']){const c=p.curve[key];if(!c||!Number.isFinite(c.x)||!Number.isFinite(c.y)||Math.abs(c.x)>coordinateLimit||Math.abs(c.y)>coordinateLimit)throw Error('Use finite Bézier handle coordinates between −1000 and 1000 mm.');}}
  // Adaptive de Casteljau subdivision bounds each curve by its control polygon.
  // The length check also catches collinear reversals that a chord-distance test misses.
- function flattenProfile(points,closed=true,tolerance=.03){
-  checkControls(points);if(!points.length)return[];const result=[{x:points[0].x,y:points[0].y}];
-  const append=p=>{result.push({x:p.x,y:p.y});if(result.length>MAX_SAMPLES+1)throw Error('The curves need too many segments. Simplify the outline or use fewer curves.');};
+ function flattenProfile(points,closed=true,tolerance=.03,sampleLimit=MAX_SAMPLES,coordinateLimit=1000){
+  checkControls(points,coordinateLimit);if(!points.length)return[];const result=[{x:points[0].x,y:points[0].y}];
+  const append=p=>{result.push({x:p.x,y:p.y});if(result.length>sampleLimit+1)throw Error('The curves need too many segments. Simplify the outline or use fewer curves.');};
   function flatten(a,c1,c2,b,depth=0){const chord=Math.hypot(b.x-a.x,b.y-a.y),length=Math.hypot(c1.x-a.x,c1.y-a.y)+Math.hypot(c2.x-c1.x,c2.y-c1.y)+Math.hypot(b.x-c2.x,b.y-c2.y),distance=p=>chord?Math.abs((b.x-a.x)*(a.y-p.y)-(a.x-p.x)*(b.y-a.y))/chord:Math.hypot(p.x-a.x,p.y-a.y);
    if(Math.max(distance(c1),distance(c2))<=tolerance&&length-chord<=tolerance){append(b);return;}
    if(depth>=18)throw Error('A curve is too intricate. Move its handles further apart.');
@@ -27,11 +27,11 @@
  const on=(a,b,p)=>Math.abs(cross(a,b,p))<EPS&&p.x>=Math.min(a.x,b.x)-EPS&&p.x<=Math.max(a.x,b.x)+EPS&&p.y>=Math.min(a.y,b.y)-EPS&&p.y<=Math.max(a.y,b.y)+EPS;
  function intersects(a,b,c,d){const u=cross(a,b,c),v=cross(a,b,d),s=cross(c,d,a),t=cross(c,d,b);return(u*v<0&&s*t<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b);}
  function signedArea(points){return points.reduce((n,p,i)=>{const q=points[(i+1)%points.length];return n+p.x*q.y-q.x*p.y;},0)/2;}
- function validatePolygon(points,axis=0,limit=MAX_POINTS){
+ function validatePolygon(points,axis=0,limit=MAX_POINTS,coordinateLimit=1000){
   if(axis!==null&&(!Number.isFinite(axis)||Math.abs(axis)>1000))return 'Choose a centre line between −1000 and 1000 mm.';
   if(points.length<3)return 'Add at least three vertices, then close the outline.';
   if(points.length>limit)return `Use at most ${limit} vertices.`;
-  if(points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||Math.abs(p.x)>1000||Math.abs(p.y)>1000))return 'Use finite coordinates between −1000 and 1000 mm.';
+  if(points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||Math.abs(p.x)>coordinateLimit||Math.abs(p.y)>coordinateLimit))return 'Use finite coordinates between −1000 and 1000 mm.';
   for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];if(Math.hypot(a.x-b.x,a.y-b.y)<EPS)return 'Two neighbouring vertices overlap. Move or remove one.';for(let j=i+1;j<points.length;j++){if(j===i+1||(i===0&&j===points.length-1))continue;if(intersects(a,b,points[j],points[(j+1)%points.length]))return 'The outline crosses or touches itself. Move or remove a vertex.';}}
   // Adjacent edges must not double back over each other either.
   for(let i=0;i<points.length;i++){const a=points[(i+points.length-1)%points.length],b=points[i],c=points[(i+1)%points.length];if(Math.abs(cross(a,b,c))<EPS&&(a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>EPS)return 'The outline doubles back along an edge. Move or remove a vertex.';}
@@ -44,10 +44,10 @@
   if(points.length>MAX_POINTS)return `Use at most ${MAX_POINTS} vertices.`;
   try{const bounds=profileBounds(points);if(bounds.minX<axis-EPS&&bounds.maxX>axis+EPS)return 'The centre line cuts through the outline or a curve. Move the line or a Bézier handle.';return validatePolygon(flattenProfile(points),axis,MAX_SAMPLES);}catch(error){return error.message;}
  }
- function validateOutline(points,tolerance=.03){
+ function validateOutline(points,tolerance=.03,limit=MAX_POINTS,coordinateLimit=1000){
   if(points.length<3)return 'Add at least three vertices, then close the outline.';
-  if(points.length>MAX_POINTS)return `Use at most ${MAX_POINTS} vertices.`;
-  try{return validatePolygon(flattenProfile(points,true,tolerance),null,MAX_SAMPLES);}catch(error){return error.message;}
+  if(points.length>limit)return `Use at most ${limit} vertices.`;
+  try{return validatePolygon(flattenProfile(points,true,tolerance,Math.max(MAX_SAMPLES,limit*2),coordinateLimit),null,Math.max(MAX_SAMPLES,limit*2),coordinateLimit);}catch(error){return error.message;}
  }
  function triangulate(points){
   const ids=points.map((_,i)=>i);if(signedArea(points)<0)ids.reverse();const triangles=[];

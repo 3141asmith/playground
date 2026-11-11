@@ -20,7 +20,8 @@
   for(const polygon of polygons)for(const [i,ring]of polygon.entries()){area+=(i===0?1:-1)*Math.abs(G.signedArea(ring));ring.forEach((p,j)=>{const q=ring[(j+1)%ring.length];perimeter+=Math.hypot(p.x-q.x,p.y-q.y);});}
   return{minX,minY,width:maxX-minX,height:maxY-minY,area,perimeter,thickness,volume:area*thickness,surface:2*area+perimeter*thickness,components:polygons.length};
  }
- function printableMesh(points,thickness,s,tolerance=.01){const error=validate(points,thickness,s);if(error)throw Error(error);const polygons=footprint(points,s,tolerance),m=metrics(polygons,thickness),vertices=[],triangles=[],boundary=[],lookup=new Map();
+ function printableMesh(points,thickness,s,tolerance=.01){const error=validate(points,thickness,s);if(error)throw Error(error);return solidFromFootprint(footprint(points,s,tolerance),thickness);}
+ function solidFromFootprint(polygons,thickness){const m=metrics(polygons,thickness),vertices=[],triangles=[],boundary=[],lookup=new Map();
   const vertex=p=>{const q=p.map(n=>Math.fround(n)||0),key=q.join(',');if(!lookup.has(key)){lookup.set(key,vertices.length);vertices.push(q);}return lookup.get(key);};
   for(const polygon of polygons){const flat=polygon.flat(),data=flat.flatMap(p=>[p.x,p.y]),holes=[];let offset=polygon[0].length;for(let i=1;i<polygon.length;i++){holes.push(offset);offset+=polygon[i].length;}
    const bottom=flat.map(p=>vertex([p.x-m.minX,p.y-m.minY,0])),top=flat.map(p=>vertex([p.x-m.minX,p.y-m.minY,thickness])),caps=earcut(data,holes,2);
@@ -42,9 +43,10 @@
   incident.forEach((faces,vertex)=>{if(!faces.size)return;const first=faces.values().next().value,seen=new Set([first]),pending=[first];while(pending.length)for(const next of adjacent[pending.pop()])if(faces.has(next)&&!seen.has(next)){seen.add(next);pending.push(next);}if(seen.size!==faces.size)throw Error('Repeated shapes meet at a point. Move the centre so they overlap, or separate them.');});
   return{vertices,triangles,boundary,metrics:m};
  }
- function mesh(points,thickness,s){const solid=printableMesh(points,thickness,s,.03),m=solid.metrics,scale=Math.max(Math.hypot(m.width/2,m.height/2,thickness/2),.01),positions=[],normals=[],lines=[],point=p=>[(p[0]-m.width/2)/scale,(p[1]-m.height/2)/scale,(p[2]-thickness/2)/scale];
+ function mesh(points,thickness,s){return displayMesh(printableMesh(points,thickness,s,.03),thickness);}
+ function displayMesh(solid,thickness){const m=solid.metrics,scale=Math.max(Math.hypot(m.width/2,m.height/2,thickness/2),.01),positions=[],normals=[],lines=[],point=p=>[(p[0]-m.width/2)/scale,(p[1]-m.height/2)/scale,(p[2]-thickness/2)/scale];
   for(const face of solid.triangles){const [a,b,c]=face.map(i=>point(solid.vertices[i])),u=b.map((x,k)=>x-a[k]),v=c.map((x,k)=>x-a[k]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],length=Math.hypot(...n);positions.push(...a,...b,...c);for(let i=0;i<3;i++)normals.push(...n.map(x=>x/length));}for(const edge of solid.boundary)lines.push(...point(solid.vertices[edge[0]]),...point(solid.vertices[edge[1]]));return{positions,normals,lines,metrics:m,scale,axisLine:[]};
  }
  function stl(points,thickness,s){return G.stlFromMesh(printableMesh(points,thickness,s),'Playground rotational symmetry | millimetres | Z up | base Z=0');}
- return{copies,rotate,footprint,validateSettings,validate,mesh,stl,printableMesh};
+ return{copies,rotate,footprint,validateSettings,validate,mesh,stl,printableMesh,solidFromFootprint,displayMesh};
 });
