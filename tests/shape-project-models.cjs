@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),P=require('../revolve/project'),G=require('../revolve/geometry'),S=require('../revolve/symmetry');
+const base=()=>({points:G.clonePoints(G.presets.vase),closed:true,axis:0,mode:'revolve',thickness:5,symmetry:{enabled:false,order:4,center:{x:0,y:0}},retained:null,activeOutline:{polygon:0,ring:0},snap:.5,angle:270,drawType:'bezier'});
+const roundtrip=s=>{const text=P.encode(s),result=P.decode(text);assert.deepEqual(result,s);assert.deepEqual(P.decode('\uFEFF'+text),s);return result;};
+roundtrip(base());let curved=base();curved.points[0].curve={c1:{x:2,y:-2},c2:{x:7,y:-2}};roundtrip(curved);roundtrip({...base(),points:[],closed:false});roundtrip({...base(),mode:'extrude',symmetry:{enabled:true,order:7,center:{x:2.5,y:3}},thickness:12.5,snap:2});
+const outlines=S.footprint(G.presets.vase,{order:8,center:{x:5,y:9}},.01),retained={...base(),mode:'extrude',retained:outlines,points:outlines[0][1],activeOutline:{polygon:0,ring:1}};roundtrip(retained);
+const clone=P.decode(P.encode(curved));clone.points[0].curve.c1.x=200;assert.equal(curved.points[0].curve.c1.x,2);
+const reject=(change,pattern)=>{const document=JSON.parse(P.encode(base()));change(document);assert.throws(()=>P.decode(JSON.stringify(document)),pattern);};
+assert.throws(()=>P.decode('{oops'),/valid JSON/);reject(d=>d.format='other',/not a Playground/);reject(d=>d.version=42,/version/);reject(d=>d.units='inch',/millimetres/);reject(d=>d.state.points[0].x='0',/vertex x/);reject(d=>d.state.points[0].curve={c1:{x:0,y:0}},/second handle/);reject(d=>d.state.symmetry.order=2.5,/whole number/);reject(d=>d.state.closed='true',/closure/);reject(d=>d.state.snap=3,/grid snap/);reject(d=>d.state.drawType='script',/edge drawing/);reject(d=>d.state.points=Array(81).fill({x:0,y:0}),/too many/);
+assert.throws(()=>P.encode({...base(),thickness:NaN}),/thickness/);assert.throws(()=>P.decode(' '.repeat(P.MAX_BYTES+1)),/5 MB/);
+const doc=JSON.parse(P.encode(base()));doc.state.points[0].__proto__={unexpected:true};doc.extra='<script>not code</script>';assert.deepEqual(P.decode(JSON.stringify(doc)),base());
+console.log('PASS versioned JSON round-trips for revolution/extrusion/curves/symmetry/retained holes/open drafts, deep copies, strict settings/coordinate/type/version/size validation and unknown-field stripping');

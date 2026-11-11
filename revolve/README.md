@@ -1,5 +1,15 @@
 # Revolve Lab
 
+## Save and load editable projects
+
+**Save project** downloads a `playground-revolve-project.json` or `playground-extrude-project.json` file. **Load project** opens one of these files to continue editing later, including after refreshing the page or on another device. Keep the downloaded JSON file; the site does not upload it or store projects on a server. STL remains the separate export for printing.
+
+The versioned `playground-shape` format stores millimetre coordinates, vertices and Bézier handles, open/closed state, revolution axis and angle, extrusion thickness, symmetry settings, retained shapes and cut-outs, the active retained outline, grid snap and new-edge mode. Unfinished outlines can be saved. Camera orientation and the old undo history are not included. Loading adds one undo step, allowing the current project to be restored with Undo and the imported project with Redo.
+
+`project.js` validates the file format/version/units, numeric settings, coordinate and handle bounds, booleans, outline selection and array sizes, and constructs clean state objects using known fields. Invalid files leave the current shape and its undo history untouched. Limits are 5 MB per file, 512 outlines and 16,384 total vertices, within the existing per-outline editing limits. Imported drafts may still need geometry corrections before STL export.
+
+`tests/shape-project-models.cjs` checks data round-trips, deep-copy independence, draft support and malformed/unsupported input rejection. `tests/shape-project.cjs` exercises real JSON downloads and imports, continued editing settings, identical data round-trips, undo/redo, invalid-file recovery, symmetry and retained shapes, and mobile layout.
+
 ## Keep a rotational shape for free editing
 
 Use **Keep shape & edit freely**, or choose **None / edit freely** while symmetry is active. The complete merged result is retained, symmetry turns off, and subsequent edits affect only the selected outline. The retained geometry uses the export's finer 0.01 mm curve approximation without snapping generated vertices to the drawing grid. Existing curves become editable straight segments along that approximation. New curves and vertex moves still use the normal editor tools and grid snapping.

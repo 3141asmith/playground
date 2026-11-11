@@ -8,3 +8,5 @@
 .symmetry-settings{margin-top:18px;padding:24px}.symmetry-settings h2{font-size:23px}.symmetry-settings .hint{margin-bottom:14px}.symmetry-settings button{width:100%}@media(max-width:480px){.symmetry-settings{padding:18px}}
 
 .detail-buttons{display:flex;flex-wrap:wrap;gap:7px}.detail-buttons button{width:auto;flex:1 1 95px}#keep-symmetry{margin-top:10px}#keep-status:empty{display:none}
+
+.project-tools{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;margin:-8px 0 24px}.project-tools>div{display:flex;gap:8px}.project-tools p{margin:0;font-size:11px;line-height:1.7}.project-tools p.error{color:var(--orange)}
