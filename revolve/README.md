@@ -1,5 +1,17 @@
 # Revolve Lab
 
+## Precision CAD tools
+
+**Move & transform** supports numeric XY offsets, rotation, independent X/Y scale percentages, horizontal/vertical reflection, and resizing to an exact bounding width and height. Choose a pivot at the selection's bounding-box centre or the grid origin. With retained geometry, transformations can target the selected outline, the selected shape and its cut-outs, or every shape. A rotational setup transforms its seed outline. Transformations include Bézier handles, preserve precision without resnapping, and reject nonfinite values or results outside the editor's coordinate bounds before changing anything.
+
+**Duplicate with offset** uses the move offsets and copies the selected retained shape with all its cut-outs. For an ordinary outline or live symmetry setup, it retains the complete result before duplicating it. **Draw a precise shape** creates rectangles, circles made from four editable cubic Bézier arcs, and regular polygons with 3–32 sides. Define dimensions and a centre, then replace the selected outline, add material or add a cut-out. Circle/polygon width is a diameter; polygon diameter is measured through its circumcircle. Adding shapes/cut-outs is available in extrusion mode and retains existing symmetry first. Overlapping material is unioned by the existing retained-outline geometry. Circles and their printed surfaces use approximations, rather than exact analytic circle entities.
+
+Select an edge and use **Split selected edge** at a percentage along its parameter. Straight edges gain a vertex; Béziers use de Casteljau subdivision, preserving their path exactly instead of snapping the split point or handles. Ordinary drawing and dragging still use the selected grid snap.
+
+**Measure & resize** reports the selected outline's width, height, area, perimeter/path length, and selected edge length and endpoint-chord angle. Curved lengths and areas use 0.01 mm adaptive subdivision. These are measurements, not a persistent geometric constraint solver. Enable **Dimensions** in the drawing toolbar for bounding width/height rulers. Front, right, top and isometric camera presets are available beside the 3D preview controls. Camera changes do not change exported geometry.
+
+All modelling operations enter undo history, and their resulting editable geometry is preserved by the existing JSON project format and STL export. Inspection/view preferences are session-only. `tests/cad-models.cjs` checks curve-aware affine transforms, known dimensions/volumes, exact Bézier splitting, primitive measurements, printable STL and invalid operations. `tests/cad.cjs` checks the interactive tools, grouped cut-outs, duplication, dimensional overlays, camera views, saved-project reload and mobile layout.
+
 ## Save and load editable projects
 
 **Save project** downloads a `playground-revolve-project.json` or `playground-extrude-project.json` file. **Load project** opens one of these files to continue editing later, including after refreshing the page or on another device. Keep the downloaded JSON file; the site does not upload it or store projects on a server. STL remains the separate export for printing.

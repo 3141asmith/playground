@@ -18,8 +18,8 @@
   for(let i=0;i<(closed?points.length:points.length-1);i++){const a=points[i],b=points[(i+1)%points.length];if(a.curve)flatten(a,a.curve.c1,a.curve.c2,b);else append(b);}
   if(closed)result.pop();return result;
  }
- function profileBounds(points,closed=true){
-  checkControls(points);const candidates=points.map(p=>({x:p.x,y:p.y}));
+ function profileBounds(points,closed=true,coordinateLimit=1000){
+  checkControls(points,coordinateLimit);const candidates=points.map(p=>({x:p.x,y:p.y}));
   for(let i=0;i<(closed?points.length:points.length-1);i++){const a=points[i],b=points[(i+1)%points.length];if(!a.curve)continue;const {c1,c2}=a.curve;for(const key of ['x','y']){const A=-a[key]+3*c1[key]-3*c2[key]+b[key],B=2*(a[key]-2*c1[key]+c2[key]),C=c1[key]-a[key],roots=[];if(Math.abs(A)<1e-12){if(Math.abs(B)>1e-12)roots.push(-C/B);}else{const d=B*B-4*A*C;if(d>=0)roots.push((-B+Math.sqrt(d))/(2*A),(-B-Math.sqrt(d))/(2*A));}for(const t of roots)if(t>0&&t<1)candidates.push(bezier(a,c1,c2,b,t));}}
   return{minX:Math.min(...candidates.map(p=>p.x)),maxX:Math.max(...candidates.map(p=>p.x)),minY:Math.min(...candidates.map(p=>p.y)),maxY:Math.max(...candidates.map(p=>p.y))};
  }
