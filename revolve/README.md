@@ -1,5 +1,15 @@
 # Revolve Lab
 
+## Extrusion mode
+
+Choose **Extrude to a thickness** in **Build your solid**. The current outline is preserved when switching modes. Clear it to draw a new closed shape, using the existing snap settings (0.5, 1, 2 or 5 mm), vertex dragging, keyboard/numeric editing, Bézier handles and undo/redo. Rectangle, triangle and concave L-shaped bracket presets are available in extrusion mode.
+
+Set **Extrusion thickness / mm** from 0.1 to 1000 mm. The 3D preview updates as you type and supports orbit, zoom, wireframe and automatic rotation. Measurements show the outline's height and width, volume (area × thickness) and surface area (two caps plus perimeter × thickness). Curves use the same adaptive approximation as revolution. The revolution axis has no effect in extrusion mode; outlines can cross it. Self-intersecting or open outlines cannot be exported. Mode and thickness changes are included in undo history.
+
+**Download STL** creates a binary STL with the drawn outline in XY and thickness in Z, in original millimetres, with the bottom at Z=0. Its XY origin is translated to the outline's lower-left bounds. Export is independent of the camera. Front/back caps use concave-polygon triangulation, with a shared boundary for the side walls. Float32 facets are checked for degeneracy and every edge must have two oppositely directed incident triangles. STL contains geometry; choose millimetres in your slicer.
+
+`tests/extrusion-models.cjs` independently decodes and audits STL files for dimensions, volume, normals and watertightness, including concave/curved shapes, reversed winding, translated outlines, collinear edges and invalid inputs. `tests/extrusion.cjs` checks grid drawing, thickness, preview, downloads, camera independence, undo/mode switching and mobile layout. Existing revolve, curve and STL checks also cover regression behaviour.
+
 ## Bézier curves
 
 Choose **Bézier** in **New edges** to add cubic curve segments as you draw. Alternatively, select an existing edge (or its starting vertex) and change **Edge type** to **Bézier curve**. Initially its controls lie on the straight edge: drag the two orange square handles to bend it, or enter handle coordinates and use **Apply handles**. Each handle snaps to the selected grid spacing. Arrow keys move a selected handle; Delete converts its edge back to a straight line. Vertices remain circular handles.

@@ -28,7 +28,7 @@
  function intersects(a,b,c,d){const u=cross(a,b,c),v=cross(a,b,d),s=cross(c,d,a),t=cross(c,d,b);return(u*v<0&&s*t<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b);}
  function signedArea(points){return points.reduce((n,p,i)=>{const q=points[(i+1)%points.length];return n+p.x*q.y-q.x*p.y;},0)/2;}
  function validatePolygon(points,axis=0,limit=MAX_POINTS){
-  if(!Number.isFinite(axis)||Math.abs(axis)>1000)return 'Choose a centre line between −1000 and 1000 mm.';
+  if(axis!==null&&(!Number.isFinite(axis)||Math.abs(axis)>1000))return 'Choose a centre line between −1000 and 1000 mm.';
   if(points.length<3)return 'Add at least three vertices, then close the outline.';
   if(points.length>limit)return `Use at most ${limit} vertices.`;
   if(points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||Math.abs(p.x)>1000||Math.abs(p.y)>1000))return 'Use finite coordinates between −1000 and 1000 mm.';
@@ -36,13 +36,18 @@
   // Adjacent edges must not double back over each other either.
   for(let i=0;i<points.length;i++){const a=points[(i+points.length-1)%points.length],b=points[i],c=points[(i+1)%points.length];if(Math.abs(cross(a,b,c))<EPS&&(a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>EPS)return 'The outline doubles back along an edge. Move or remove a vertex.';}
   if(Math.abs(signedArea(points))<EPS)return 'The outline needs an area. Move a vertex away from the line.';
-  const ds=points.map(p=>p.x-axis);if(Math.min(...ds)<-EPS&&Math.max(...ds)>EPS)return 'The centre line cuts through the outline. Move it to one side or onto an edge.';
+  if(axis!==null){const ds=points.map(p=>p.x-axis);if(Math.min(...ds)<-EPS&&Math.max(...ds)>EPS)return 'The centre line cuts through the outline. Move it to one side or onto an edge.';}
   return null;
  }
  function validate(points,axis=0){
   if(points.length<3)return 'Add at least three vertices, then close the outline.';
   if(points.length>MAX_POINTS)return `Use at most ${MAX_POINTS} vertices.`;
   try{const bounds=profileBounds(points);if(bounds.minX<axis-EPS&&bounds.maxX>axis+EPS)return 'The centre line cuts through the outline or a curve. Move the line or a Bézier handle.';return validatePolygon(flattenProfile(points),axis,MAX_SAMPLES);}catch(error){return error.message;}
+ }
+ function validateOutline(points,tolerance=.03){
+  if(points.length<3)return 'Add at least three vertices, then close the outline.';
+  if(points.length>MAX_POINTS)return `Use at most ${MAX_POINTS} vertices.`;
+  try{return validatePolygon(flattenProfile(points,true,tolerance),null,MAX_SAMPLES);}catch(error){return error.message;}
  }
  function triangulate(points){
   const ids=points.map((_,i)=>i);if(signedArea(points)<0)ids.reverse();const triangles=[];
@@ -94,10 +99,13 @@
   return{vertices,triangles};
  }
  function stl(points,axis=0,degrees=360){
-  const {vertices,triangles}=printableMesh(points,axis,degrees),buffer=new ArrayBuffer(84+50*triangles.length),data=new DataView(buffer);
-  const label='Playground Revolve Lab | millimetres | Z up | base Z=0';for(let i=0;i<label.length;i++)data.setUint8(i,label.charCodeAt(i));data.setUint32(80,triangles.length,true);
+  return stlFromMesh(printableMesh(points,axis,degrees));
+ }
+ function stlFromMesh({vertices,triangles},label='Playground Revolve Lab | millimetres | Z up | base Z=0'){
+  const buffer=new ArrayBuffer(84+50*triangles.length),data=new DataView(buffer);
+  for(let i=0;i<Math.min(80,label.length);i++)data.setUint8(i,label.charCodeAt(i));data.setUint32(80,triangles.length,true);
   triangles.forEach((ids,i)=>{const [a,b,c]=ids.map(id=>vertices[id]),u=b.map((n,j)=>n-a[j]),v=c.map((n,j)=>n-a[j]),normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],length=Math.hypot(...normal);if(!length)throw Error('A face is too small to export. Increase the angle or adjust the outline.');const values=[...normal.map(n=>n/length),...a,...b,...c];values.forEach((n,j)=>data.setFloat32(84+i*50+j*4,n,true));});
   return buffer;
  }
- return{validate,triangulate,measures,mesh,printableMesh,stl,presets,signedArea,MAX_POINTS,MAX_SAMPLES,clonePoints,lineControls,bezier,flattenProfile,profileBounds};
+ return{validate,validateOutline,triangulate,measures,mesh,printableMesh,stl,stlFromMesh,presets,signedArea,MAX_POINTS,MAX_SAMPLES,clonePoints,lineControls,bezier,flattenProfile,profileBounds};
 });
