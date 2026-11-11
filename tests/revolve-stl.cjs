@@ -1,6 +1,7 @@
+const {enableToolMenus}=require('./revolve-menu-helper.cjs');
 const {chromium}=require('../../.runtime/tools/node_modules/playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),{audit}=require('./revolve-stl-models.cjs');
 (async()=>{const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});try{
- const page=await browser.newPage({viewport:{width:1280,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));const base=process.env.PLAYGROUND_URL||'http://127.0.0.1:4185/playground/';await page.goto(base+'revolve/');await page.waitForFunction(()=>document.body.dataset.ready==='true');
+ const page=await browser.newPage({viewport:{width:1280,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));const base=process.env.PLAYGROUND_URL||'http://127.0.0.1:4185/playground/';enableToolMenus(page);await page.goto(base+'revolve/');await page.waitForFunction(()=>document.body.dataset.ready==='true');
  const download=async()=>{const pending=page.waitForEvent('download');await page.locator('#export-stl').click();const item=await pending;assert.match(item.suggestedFilename(),/^revolve-[\d.]+deg-mm\.stl$/);return fs.readFileSync(await item.path());};
  await page.locator('#preset').selectOption('cylinder');const first=await download(),full=audit(first);assert.equal(full.max[2],20);assert.equal(full.max[0]-full.min[0],20);assert.match(await page.locator('#stl-status').textContent(),/downloaded in mm/);
  await page.locator('#solid-in').click();await page.locator('#solid').focus();await page.keyboard.press('ArrowRight');assert.deepEqual(await download(),first,'Camera does not change exported geometry');

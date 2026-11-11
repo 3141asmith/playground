@@ -1,5 +1,13 @@
 # Revolve Lab
 
+## Top tool menus
+
+The sticky toolbar opens **File**, **Model**, **Sketch**, **Curves**, **Symmetry**, **Transform**, **Shapes**, **Measure** and **View** panels. Controls are moved into these menus, using the same underlying elements and modelling operations. Undo, Redo and Clear remain directly accessible. Drawing and 3D canvases sit beside each other on desktop and stack on smaller screens; the toolbar remains available while scrolling.
+
+Panels are non-modal: changes update the model immediately, and only one panel stays open at a time. Click the same tool button, its Close button, outside the panel, or press Escape to dismiss it. Escape and Close return focus to the invoking button. Menus fit within the viewport and scroll internally on smaller screens. File contains JSON save/load and STL export; Model contains revolution/extrusion, presets, axis, thickness and revolution animation. Sketch contains grid/vertex editing; Curves contains edge and handle editing. The other menus contain their corresponding precision and display tools. View also provides shortcuts to the drawing and 3D canvases.
+
+`menus.js` uses native popovers where available, with a JavaScript fallback. `tests/revolve-menus.cjs` checks every menu, live edits, focus and dismissal, sticky behaviour, responsive bounds and the fallback. Existing modelling browser checks use `tests/revolve-menu-helper.cjs` to open the menu owning each control before interacting; geometry and project-data checks are unchanged.
+
 ## Precision CAD tools
 
 **Move & transform** supports numeric XY offsets, rotation, independent X/Y scale percentages, horizontal/vertical reflection, and resizing to an exact bounding width and height. Choose a pivot at the selection's bounding-box centre or the grid origin. With retained geometry, transformations can target the selected outline, the selected shape and its cut-outs, or every shape. A rotational setup transforms its seed outline. Transformations include Bézier handles, preserve precision without resnapping, and reject nonfinite values or results outside the editor's coordinate bounds before changing anything.
