@@ -1,5 +1,17 @@
 # Revolve Lab
 
+## Rotational symmetry
+
+In extrusion mode, choose **Rotational symmetry** in **Find your symmetry**, then set an integer order from 2 to 24. Order N repeats the seed outline every 360/N degrees. **None** keeps the original outline. The numbered outline remains editable with the normal snapped vertex and Bézier tools; pale copies and radial guides follow it. Rotation is calculated before polygon operations rather than snapping copies back onto the rectangular grid. A seed may already have additional rotational symmetry.
+
+Choose centre coordinates or use **Centre on outline** to use its snapped bounding-box centre. On a closed outline, drag the purple centre marker to reposition it. The original outline, centre, mode and order participate in undo/redo. Symmetry settings are retained but inactive in revolve mode.
+
+Overlapping copies are unioned before extrusion: volumes count the occupied area once, holes have walls, and disconnected regions remain separate printable pieces in the same STL. Point/edge contacts that cannot form a manifold solid are rejected with an adjustment message. STL uses the same union at the finer 0.01 mm curve tolerance, independently of camera orientation. The union uses a 0.00001 mm integer geometry grid; near-coincident points are cleaned within 0.00002 mm. This is substantially finer than the drawing snap and curve tessellation. Cap edges are split where hole bridges would otherwise leave T-junctions; every float32 edge and vertex fan is audited for closure.
+
+`tests/symmetry-models.cjs` checks every order 2–24, no overlap double-counting, holes and disconnected components, difficult collinear hole caps, curves, winding and independently audited STL files. `tests/symmetry.cjs` checks controls, measurements, STL downloads, centre snapping, seed edits, undo/redo, mode switching and mobile layout.
+
+Bundled geometry dependencies are [Clipper 6.4.2](https://github.com/junmer/clipper-lib) (Boost Software License, with original attribution and embedded JSBN notice retained) and [Earcut 2.2.4](https://github.com/mapbox/earcut/tree/v2.2.4) (ISC). Their browser distributions and licences are in `vendor/`; no runtime CDN or package installation is needed.
+
 ## Extrusion mode
 
 Choose **Extrude to a thickness** in **Build your solid**. The current outline is preserved when switching modes. Clear it to draw a new closed shape, using the existing snap settings (0.5, 1, 2 or 5 mm), vertex dragging, keyboard/numeric editing, Bézier handles and undo/redo. Rectangle, triangle and concave L-shaped bracket presets are available in extrusion mode.
