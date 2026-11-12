@@ -1,5 +1,15 @@
 # Revolve Lab
 
+## PLA estimate
+
+Below the 3D model, **Estimated PLA needed** shows approximate filament mass in grams and length in metres, plus the model's solid-PLA mass before allowance. It updates with geometry edits, symmetry, retained cut-outs, undo, imported models and the current revolution angle. Open/invalid/zero-volume solids clear the estimate. **Print settings** opens the assumptions in the Measure menu and focuses the infill field.
+
+Defaults are 20% infill, 0.8 mm uniform shell thickness, 1.24 g/cm³ density, 1.75 mm filament and 10% extra material allowance. Density is based on [Prusament's manufacturer data](https://prusament.com/wp-content/uploads/2023/05/22_12_07_BL_Prusament-PLA-by-Prusa-Polymers9051-89-2_EN.pdf) and can be changed for the chosen filament. These settings are session-only and do not alter geometry, STL or saved project data.
+
+`material.js` estimates shell volume as `min(model volume, surface area × shell thickness)`, adds the chosen infill fraction of the remaining core, then applies the extra-material allowance. Mass uses mm³ ÷ 1000 × density in g/cm³. Filament length uses material volume divided by the circular filament cross-section, converted from mm to metres. This simple shell approximation can overestimate shells on curved or thin features and does not calculate supports, brim, purge paths, layer heights or print orientation. Use a slicer for a print-specific quantity.
+
+`tests/material-models.cjs` checks unit conversions, full-density reference mass, shell/core handling, allowances, thin-part capping and parameter validation. `tests/material.cjs` checks the live estimates, geometry/undo updates, invalid input recovery, partial/zero-angle revolutions, settings shortcut and mobile placement.
+
 ## Top tool menus
 
 The sticky toolbar opens **File**, **Model**, **Sketch**, **Curves**, **Symmetry**, **Transform**, **Shapes**, **Measure** and **View** panels. Controls are moved into these menus, using the same underlying elements and modelling operations. Undo, Redo and Clear remain directly accessible. Drawing and 3D canvases sit beside each other on desktop and stack on smaller screens; the toolbar remains available while scrolling.
