@@ -54,8 +54,8 @@ const assert = require('node:assert/strict');
     }
     assert.equal(topicCount,19); assert.equal(exampleCount,42); assert.equal(checkCount,57);
     await page.goto(base+'computer-science/');
-    assert.match(await page.locator('.lead').textContent(),/42 worked examples/);
-    assert.equal(await page.locator('a.unit-card').count(),4);
+    assert.match(await page.locator('.lead').textContent(),/58 worked examples/);
+    assert.equal(await page.locator('a.unit-card').count(),5);
     assert.deepEqual(errors,[]); assert.deepEqual(missing,[]);
     console.log('PASS all 19 guides, 42 examples, 57 answer reveals, existing 21 labs, jump focus/hash preservation, progress and mobile layouts');
   } finally { await browser.close(); }

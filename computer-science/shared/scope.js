@@ -147,6 +147,7 @@
       }
     }
   };
+  Object.assign(scopes, window.CSExtraScopes || {});
   // Exposed for coverage checks and future content maintenance.
   window.CSScope = scopes;
   const make = (tag, text, cls) => {const node=document.createElement(tag);node.textContent=text;if(cls)node.className=cls;return node;};
