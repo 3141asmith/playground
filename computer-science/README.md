@@ -1,5 +1,7 @@
 # Computer science study resources
 
+The [Python workspace](python/) provides a real browser-based editor and runner, initially linked from SLR 9's encryption section. Its left-hand library contains ten editable cipher, encryption, hashing and Python-input examples with OCR/extra-context notes. See [its implementation and runtime notes](python/README.md) for package loading, drafts, input, Stop and browser checks.
+
 Original explanations and practice organised around the existing Craig 'n' Dave SLR groups. This area currently covers **SLRs 2, 3, 4, 9 and 11**, not the entire H446 course.
 
 | SLR | OCR reference | Existing topics | Extended material |
