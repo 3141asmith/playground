@@ -1,0 +1,30 @@
+const {chromium}=require('../../.runtime/tools/node_modules/playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs');
+(async()=>{
+  if(!fs.existsSync('artifacts/birdnet-soundscape.wav')){fs.mkdirSync('artifacts',{recursive:true});const response=await fetch('https://raw.githubusercontent.com/birdnet-team/BirdNET-Analyzer/main/birdnet_analyzer/example/soundscape.wav');assert.ok(response.ok,'Download of official test recording failed');fs.writeFileSync('artifacts/birdnet-soundscape.wav',Buffer.from(await response.arrayBuffer()));}
+  const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+  const page=await browser.newPage({viewport:{width:1440,height:1100},acceptDownloads:true});
+  const base=process.env.PLAYGROUND_URL||'http://127.0.0.1:4185/playground/';
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base+'birds/');
+  const numerical=await page.evaluate(async()=>{const {spectrum,windows,groupResults}=await import('./signal.js');const pcm=Float32Array.from({length:2048},(_,i)=>Math.sin(2*Math.PI*3000*i/48000));const spec=spectrum(pcm);let peak=0;for(let i=1;i<spec.length;i++)if(spec[i]>spec[peak])peak=i;return {peak,db:spec[peak],silence:spectrum(new Float32Array(2048))[128],positions:windows(2,9),groups:groupResults([{start:0,end:3,top:[{scientific:'A',common:'B',score:.8}]},{start:1.5,end:4.5,top:[{scientific:'A',common:'B',score:.9}]}],.5)};});
+  assert.equal(numerical.peak,128);assert.ok(Math.abs(numerical.db)<.01);assert.ok(numerical.silence<-100);assert.deepEqual(numerical.positions,[2,3.5,5,6.5]);assert.equal(numerical.groups[0].segments.length,2);
+  await page.click('#test-tone');await page.waitForFunction(()=>!document.querySelector('#analyse').disabled);assert.match(await page.locator('#recording-info').textContent(),/Synthetic/);
+  const imagePromise=page.waitForEvent('download');await page.click('#save-image');const image=await imagePromise;assert.equal(image.suggestedFilename(),'birdsong-spectrogram.png');
+  await page.locator('#audio-file').setInputFiles('artifacts/birdnet-soundscape.wav');await page.waitForFunction(()=>!document.querySelector('#analyse').disabled);await page.fill('#range-end','6');await page.click('#view-range');await page.click('#analyse');
+  console.log('Running actual BirdNET model…');
+  await page.waitForFunction(()=>document.querySelector('#analysis-status').textContent.includes('Analysis complete')||document.querySelector('#analysis-status').textContent.includes('could not finish'),null,{timeout:240000});
+  const status=await page.locator('#analysis-status').textContent();console.log(status);assert.match(status,/Analysis complete/);
+  const csvPromise=page.waitForEvent('download');await page.click('#save-results');const csv=await csvPromise;const csvPath=await csv.path(),text=fs.readFileSync(csvPath,'utf8');assert.match(text,/scientific_name/);assert.ok(text.split('\n').length>=16);console.log(text.slice(0,1500));
+  assert.ok(await page.locator('.match').count()>0,'Official example should produce matches');
+  await page.locator('.match button').first().click();await page.waitForTimeout(300);assert.ok(await page.evaluate(()=>!document.querySelector('#player').paused));await page.locator('#player').evaluate(p=>p.pause());
+  await page.fill('#range-start','0');await page.fill('#range-end','60');await page.click('#analyse');await page.waitForTimeout(250);await page.click('#stop');assert.match(await page.locator('#analysis-status').textContent(),/stopped/);
+  await page.fill('#range-end','3');await page.click('#analyse');await page.waitForFunction(()=>document.querySelector('#analysis-status').textContent.includes('Analysis complete'),null,{timeout:240000});
+  await page.locator('#threshold').fill('0.95');await page.locator('#threshold').dispatchEvent('input');assert.equal(await page.locator('#threshold-value').textContent(),'0.95');await page.locator('#threshold').fill('0.25');await page.locator('#threshold').dispatchEvent('input');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  if(!process.env.PLAYGROUND_URL)await page.screenshot({path:'assets/birdsong.png'});
+  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(!process.env.PLAYGROUND_URL)await page.screenshot({path:'artifacts/birdsong-mobile.png',fullPage:true});
+  await page.locator('#audio-file').setInputFiles({name:'broken.wav',mimeType:'audio/wav',buffer:Buffer.from('not audio')});await page.waitForFunction(()=>document.querySelector('#file-status').textContent.includes('Could not open'));assert.equal(errors.length,0,errors.join('\n'));
+  const failureContext=await browser.newContext();await failureContext.route('**/tf.min.js',route=>route.abort());const failure=await failureContext.newPage();await failure.goto(base+'birds/');await failure.click('#test-tone');await failure.fill('#range-end','3');await failure.click('#analyse');await failure.waitForFunction(()=>document.querySelector('#analysis-status').textContent.includes('could not finish'),null,{timeout:30000});assert.equal(await failure.locator('#analyse').isEnabled(),true);await failureContext.unroute('**/tf.min.js');await failure.click('#analyse');await failure.waitForFunction(()=>document.querySelector('#analysis-status').textContent.includes('Analysis complete'),null,{timeout:240000});await failureContext.close();
+  await browser.close();console.log('Birdsong tests passed: numerical FFT, real model inference, playback, downloads, cancellation/restart, mobile, invalid audio and failed model download/retry.');
+})().catch(error=>{console.error(error);process.exit(1)});
