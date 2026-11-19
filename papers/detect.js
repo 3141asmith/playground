@@ -48,7 +48,7 @@ export function indexQuestions(pages){
       // page's running header to the previous question as a continuation.
       const prefixOnly=n!==start.page&&n===next?.page&&next.y<.22&&!page.rows.some(r=>r.y>=top&&r.y<bottom&&/[A-Za-z]{3}/.test(r.text)&&!(runningHeads.get(r.text.replace(/\d+/g,'#'))?.size>=2));
       if(!blank&&!prefixOnly&&bottom-top>.015)parts.push({page:n,crop:{x:.025,y:top,w:.95,h:Math.min(.975,bottom)-top}});if(endMarker||n===next?.page)break;}
-    if(parts.length){const label='Question '+start.number+(start.restarted?' (new section)':'');questions.push({id:'q-'+i,number:start.number,label,summary:start.summary,parts});}}
+    if(parts.length){for(const part of parts)part.numberRows=anchors.filter(a=>a.number===start.number&&a.page===part.page&&a.y>=part.crop.y&&a.y<part.crop.y+part.crop.h).map(a=>({x:a.x,y:a.y}));const label='Question '+start.number+(start.restarted?' (new section)':'');questions.push({id:'q-'+i,number:start.number,label,summary:start.summary,parts});}}
   return questions;
 }
 
