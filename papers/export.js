@@ -8,7 +8,7 @@ export async function createPaper(questions,options,onProgress=()=>{}){const {PD
   // the question content itself is rendered and retains all original glyphs.
   const safe=text=>[...String(text)].map(c=>{try{font.encodeText(c);return c;}catch{return '?';}}).join('');
   const fit=(text,size,width,f=font)=>{let value=safe(text);while(value.length&&f.widthOfTextAtSize(value,size)>width)value=value.slice(0,-1);return value;};
-  function newPage(){page=doc.addPage([W,H]);y=H-75;page.drawText(fit(options.title,13,available,bold),{x:margin,y:H-40,size:13,font:bold,color:ink});page.drawLine({start:{x:margin,y:H-51},end:{x:W-margin,y:H-51},thickness:.5,color:rgb(.8,.83,.8)});}
+  function newPage(){page=doc.addPage([W,H]);y=H-75;if(options.pageTitle!==false){page.drawText(fit(options.title,13,available,bold),{x:margin,y:H-40,size:13,font:bold,color:ink});page.drawLine({start:{x:margin,y:H-51},end:{x:W-margin,y:H-51},thickness:.5,color:rgb(.8,.83,.8)});}}
   if(options.cover)await addCoverPage(doc,options.cover,renderRegion,font,bold);
   newPage();
   const pageQuestions=new Map();
