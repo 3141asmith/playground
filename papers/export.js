@@ -1,3 +1,4 @@
+import {addCoverPage} from './cover.js';
 import {numberLocations,eraseNumbers,drawNumbers} from './numbering.js';
 // Export only rendered crop pixels: content outside each region is not embedded.
 export async function renderRegion(part,scale,renumber=false){const page=await part.paper.pdf.getPage(part.page),natural=page.getViewport({scale:1}),box=part.crop;let viewport=page.getViewport({scale});const pixels=viewport.width*box.w*viewport.height*box.h;if(pixels>24000000)scale*=Math.sqrt(24000000/pixels);scale=Math.min(scale,10000/(natural.width*box.w),10000/(natural.height*box.h));viewport=page.getViewport({scale});const locations=renumber?await numberLocations(part,part.sourceNumber):[];const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.ceil(viewport.width*box.w));canvas.height=Math.max(1,Math.ceil(viewport.height*box.h));try{await page.render({canvasContext:canvas.getContext('2d'),viewport,transform:[1,0,0,1,-viewport.width*box.x,-viewport.height*box.y],annotationMode:0,background:'rgb(255,255,255)'}).promise;if(locations.length)eraseNumbers(canvas.getContext('2d'),locations,viewport,box);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('Could not capture a selected region.');return {bytes:new Uint8Array(await blob.arrayBuffer()),width:natural.width*box.w,height:natural.height*box.h,natural:{width:natural.width,height:natural.height},numberLocations:locations};}finally{canvas.width=canvas.height=1;}}
@@ -7,6 +8,7 @@ export async function createPaper(questions,options,onProgress=()=>{}){const {PD
   const safe=text=>[...String(text)].map(c=>{try{font.encodeText(c);return c;}catch{return '?';}}).join('');
   const fit=(text,size,width,f=font)=>{let value=safe(text);while(value.length&&f.widthOfTextAtSize(value,size)>width)value=value.slice(0,-1);return value;};
   function newPage(){page=doc.addPage([W,H]);y=H-75;page.drawText(fit(options.title,13,available,bold),{x:margin,y:H-40,size:13,font:bold,color:ink});page.drawLine({start:{x:margin,y:H-51},end:{x:W-margin,y:H-51},thickness:.5,color:rgb(.8,.83,.8)});}
+  if(options.cover)await addCoverPage(doc,options.cover,renderRegion,font,bold);
   newPage();
   for(let qi=0;qi<questions.length;qi++){const question=questions[qi];if(options.separate&&qi>0)newPage();let needsHeading=true;
     for(let pi=0;pi<question.parts.length;pi++){const part=question.parts[pi],image=await renderRegion(part,options.scale,!!options.renumber),embedded=await doc.embedPng(image.bytes),headingHeight=options.headings?23:0,referenceHeight=options.references?18:0,maxHeight=H-75-bottom-headingHeight-referenceHeight;const factor=Math.min(1,available/image.width,maxHeight/image.height),width=image.width*factor,height=image.height*factor;
@@ -18,6 +20,6 @@ export async function createPaper(questions,options,onProgress=()=>{}){const {PD
     }
     y-=8;
   }
-  const pages=doc.getPages();for(let i=0;i<pages.length;i++)pages[i].drawText((i+1)+' / '+pages.length,{x:W-margin-40,y:25,size:9,font,color:rgb(.4,.45,.4)});
+  const pages=doc.getPages(),first=options.cover?1:0;for(let i=first;i<pages.length;i++)pages[i].drawText((i-first+1)+' / '+(pages.length-first),{x:W-margin-40,y:25,size:9,font,color:rgb(.4,.45,.4)});
   return doc.save();
 }
