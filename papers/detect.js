@@ -7,6 +7,7 @@ export function textRows(content,viewport){
 }
 
 export function questionMarker(row,rows,index){
+  if(/^Question\s+\d+(?:\.\d+)?\s+(?:is\s+)?(?:continues?\b|continued\b)/i.test(row.text))return null;
   const text=row.text.trim().replace(/^(\d{1,2})\*/, '$1 ');if(row.y<.065||row.y>.93||row.x>.30)return null;
   // Explicit headings, standard 1 / 1(a) / 1. labels, and AQA's 01 / 01.1
   // labels (including labels extracted as separate boxed digits: 0 1 . 1).

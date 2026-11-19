@@ -18,14 +18,17 @@ Static browser-local PDF question selector for Playground. No account, backend, 
 - `numbering.js` locates leading digits in detected text rows, masks those digit glyphs on white backgrounds and adds replacement PDF text at their original positions. Existing box borders and decimal suffixes remain. Original source PDFs and the source viewer are unchanged. Text-run character widths are estimated from PDF widths/font metrics, so check the final preview with unusual fonts or layouts.
 - Single-question manual crops containing recognised labels can also be renumbered. Image-only labels, clipped labels and manual crops containing multiple source questions retain their printed numbering. References such as “see question 16” within prose are not rewritten. You can turn renumbering off to preserve source labels and headings.
 - Optional question headings, title, page numbers and source references use standard PDF fonts. Unsupported characters in those added labels are replaced with `?`; original question glyphs are preserved in their rendered images.
+- `navigation.js` removes recognised source continuation, turn-over and end-of-paper notices from question crops, including wrapped notices. After layout, the exporter adds notices based on the actual output page breaks and current question numbers. Questions continuing onto another page receive an outgoing notice and an incoming continuation heading, even when ordinary question headings are disabled. Sections that now fit together on one page no longer carry their source continuation notices. Covers are left unchanged.
+- Navigation notices require readable embedded text. Notices inside scanned images, unusual wording and other references within question prose need manual review. Only recognised notice rectangles are masked; nearby copyright text, diagrams and question content remain.
 - Interactive forms, annotations, attachments and source document scripts are not included. PDF JavaScript actions are not executed. Password-protected PDFs are rejected.
 - Limits: 20 source papers, 50 MB per file, 150 MB total, 500 pages per source and 200 selected regions. Work remains in memory and clears on refresh/navigation; download the output before leaving. Failed imports retain existing work. Export errors retain selections for retry.
 
 ## Dependencies
 
-- Vendored Mozilla PDF.js / pdfjs-dist 5.4.624, Apache-2.0 (`vendor/PDFJS-LICENSE.txt`): https://mozilla.github.io/pdf.js/
+- Vendored Mozilla PDF.js / pdfjs-dist 6.5.438, Apache-2.0 (`vendor/PDFJS-LICENSE.txt`): https://mozilla.github.io/pdf.js/
 - Vendored pdf-lib 1.17.1, MIT (`vendor/PDFLIB-LICENSE.txt`): https://pdf-lib.js.org/
 - PDF.js loads supplemental character maps, standard font data and image-decoder WASM from the pinned jsDelivr distribution when required. Requests contain asset URLs, never source PDFs. Fonts used by the interface come from Google Fonts.
+- The PDF.js version uses a separate page mapper for each document, allowing source papers and generated previews with different page counts to remain open together. Versioned module and worker filenames keep cached versions in sync.
 
 Validation: `node tests/paper-builder.cjs` with the repository's local server running. Set `PLAYGROUND_URL` to run against a deployment. The test creates its own PDFs and checks multi-source assembly, continuations, ordering, scanned/rotated sources, crop pixel exclusion, output layout/dimensions, invalid files, downloads and mobile overflow.
 
@@ -34,3 +37,5 @@ Question indexing: `node tests/paper-question-detection.cjs` uses synthetic numb
 Renumbering: `node tests/paper-renumbering.cjs` checks source Q16 → output Q3, decimal subparts, continuations, boxed digits, changes after reordering, switching renumbering off, and renumbering with added headings disabled. A pixel comparison verifies that erasing labels leaves the surrounding question/diagram unchanged. An optional public AQA fixture validates real boxed number locations.
 
 Covers/marks: `node tests/paper-cover.cjs` checks source-cover artwork, edited fields, page selection, total-vs-subpart counting, editable allocations, missing-mark blocking, crop recalculation and cover removal. Optional public fixtures also verify complete totals of 85 (AQA) and 140 (OCR), and date/duration field separation.
+
+Navigation: `node tests/paper-navigation.cjs` checks actual output page transitions, renumbering on/off, sections combined onto one page, wrapped notices, disabled question headings, generic manual selections and final end notices. Pixel comparisons check that notice removal preserves surrounding content. An optional public AQA fixture verifies a real continuation notice. Sources deliberately have different page counts to cover independent document lifetimes.
