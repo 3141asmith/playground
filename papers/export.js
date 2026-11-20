@@ -24,7 +24,7 @@ export async function createPaper(questions,options,onProgress=()=>{}){const {PD
     }
     y-=8;
   }
-  const bodyPages=[...pageQuestions.keys()];for(let i=0;decoration&&i<bodyPages.length;i++){const current=pageQuestions.get(bodyPages[i]).last,next=i+1<bodyPages.length?pageQuestions.get(bodyPages[i+1]).first:null;bodyPages[i].drawText(pageTransition(current,next,!!options.renumber),{x:textMargin,y:18,size:8,font:next?font:bold,color:ink});}
+  const bodyPages=[...pageQuestions.keys()];for(let i=0;decoration&&i<bodyPages.length;i++){const current=pageQuestions.get(bodyPages[i]).last,next=i+1<bodyPages.length?pageQuestions.get(bodyPages[i+1]).first:null;bodyPages[i].drawText((!next&&options.documentKind==='scheme'?'END OF MARK SCHEME':pageTransition(current,next,!!options.renumber)),{x:textMargin,y:18,size:8,font:next?font:bold,color:ink});}
   const pages=doc.getPages(),first=options.cover?1:0;for(let i=first;decoration&&i<pages.length;i++)pages[i].drawText((i-first+1)+' / '+(pages.length-first),{x:W-textMargin-40,y:18,size:8,font,color:rgb(.4,.45,.4)});
   return doc.save();
 }

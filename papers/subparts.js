@@ -2,19 +2,21 @@ import {textRows} from './detect.js?v=4';
 
 // Full-width bands preserve diagrams and answer space between printed labels.
 // This is text/layout detection, so users must review inferred boundaries.
-function marker(row,sourceNumber){
+function marker(row,sourceNumber,tableMode=false){
   if(row.x>.38)return null;
   const text=row.text.trim();let match=text.match(/^(?:Question\s+)?(0\s*\d|[1-9]\s+\d|\d{1,3})\s*\.\s*(\d{1,2})(?=\s|\(|$)/i);
   if(match&&(!sourceNumber||Number(match[1].replace(/\s/g,''))===sourceNumber))return {family:'decimal',key:'.'+match[2],label:'.'+match[2]};
   match=text.match(/^(?:(?:Question\s+)?(\d{1,3})\s*)?(?:\(([a-z]+)\)|([a-z])\))(?=\s|\(|$)/i);
+  if(!match&&tableMode&&row.x<.18){const bare=text.match(/^(?:(\d{1,3})\s+)?([a-z])(?:\s+|$)/i);if(bare)match=[bare[0],bare[1],bare[2]];}
   if(!match||match[1]&&sourceNumber&&Number(match[1])!==sourceNumber)return null;
   const key=(match[2]||match[3]).toLowerCase();if(key.length>1&&!/^[ivx]+$/.test(key))return null;
   return {family:/^[ivx]+$/.test(key)?'roman':'letter',key,label:'('+key+')'};
 }
 const totalLine=text=>/^(?:\(?\[?\s*total\s+(?:for\s+)?(?:this\s+)?question\s*\d*\s*(?:is|:|=)?\s*\d+(?:\.\d+)?\s*(?:marks?|[\])])|[\[(]\s*total\s*:?\s*\d+(?:\.\d+)?\s*(?:marks?|[\])]))/i.test(text);
-export async function findQuestionParts(parts,sourceNumber){
+export async function findQuestionParts(parts,sourceNumber,{tableMode=false}={}){
   const pages=[];for(const part of parts){const page=await part.paper.pdf.getPage(part.page),rows=textRows(await page.getTextContent(),page.getViewport({scale:1})).filter(r=>r.y>=part.crop.y&&r.y<part.crop.y+part.crop.h&&r.x>=part.crop.x-.01&&r.x<part.crop.x+part.crop.w);pages.push({part,rows});}
-  const candidates=pages.flatMap((p,index)=>p.rows.map(row=>({row,index,...marker(row,sourceNumber)})).filter(m=>m.key));
+  let candidates=pages.flatMap((p,index)=>p.rows.map(row=>({row,index,...marker(row,sourceNumber)})).filter(m=>m.key));
+  if(tableMode&&!candidates.some(m=>m.family==='letter'||m.family==='decimal'))candidates=pages.flatMap((p,index)=>p.rows.map(row=>({row,index,...marker(row,sourceNumber,true)})).filter(m=>m.key));
   const family=candidates.some(m=>m.family==='decimal')?'decimal':candidates.some(m=>m.family==='letter')?'letter':'roman';
   const groups=[{key:'shared',label:'Shared introduction',included:true,parts:[]}];let current=groups[0],previous='';
   for(let index=0;index<pages.length;index++){
