@@ -2,6 +2,8 @@
 
 Static browser-local PDF question selector for Playground. No account, backend, OCR, API key or upload of source documents. Upload multiple PDFs, choose detected questions from each paper's dropdown, reorder them, and export a combined A4 paper. Manual rectangular selection remains available. Fictional example papers are generated locally.
 
+Use **Saved workspaces** to save named copies of the current source PDFs, mark schemes, selected/cropped questions, mark and cover edits, and export settings. Saved copies use this browser's IndexedDB storage; they remain available after reloads in the same browser profile and are never uploaded. Select a saved workspace and choose **Load** to restore it, or **Delete** to remove it. Saving again creates another named copy; changes made after a save are not included until saved again. Browser storage can be cleared or limited by the browser, so keep the original PDFs and export important work.
+
 ## Behaviour and limits
 
 - Mark schemes have their own upload area and source list. Pair each question paper with its mark scheme using the dropdown under the source paper. A unique matching filename stem (ignoring Question Paper / Mark Scheme / QP / MS) is paired automatically; other files require explicit pairing. Uploaded documents remain browser-local. There are separate 20-file limits for papers and schemes, with a shared 150 MB total and the same per-file/page limits.
@@ -34,7 +36,7 @@ Static browser-local PDF question selector for Playground. No account, backend, 
 - `navigation.js` removes recognised source continuation, turn-over and end-of-paper notices from question crops, including wrapped notices. After layout, the exporter adds notices based on the actual output page breaks and current question numbers. Questions continuing onto another page receive an outgoing notice and an incoming continuation heading, even when ordinary question headings are disabled. Sections that now fit together on one page no longer carry their source continuation notices. Covers are left unchanged.
 - Navigation notices require readable embedded text. Notices inside scanned images, unusual wording and other references within question prose need manual review. Only recognised notice rectangles are masked; nearby copyright text, diagrams and question content remain.
 - Interactive forms, annotations, attachments and source document scripts are not included. PDF JavaScript actions are not executed. Password-protected PDFs are rejected.
-- Limits: 20 source papers, 50 MB per file, 150 MB total, 500 pages per source and 200 selected regions. Work remains in memory and clears on refresh/navigation; download the output before leaving. Failed imports retain existing work. Export errors retain selections for retry.
+- Limits: 20 source papers, 50 MB per file, 150 MB total, 500 pages per source and 200 selected regions. Saving copies the original PDFs into browser storage and may be limited by available device/browser storage. Keep the original PDFs and download the output as a backup. Failed imports retain existing work. Export errors retain selections for retry.
 
 ## Dependencies
 
@@ -44,6 +46,8 @@ Static browser-local PDF question selector for Playground. No account, backend, 
 - The PDF.js version uses a separate page mapper for each document, allowing source papers and generated previews with different page counts to remain open together. Versioned module and worker filenames keep cached versions in sync.
 
 Validation: `node tests/paper-builder.cjs` with the repository's local server running. Set `PLAYGROUND_URL` to run against a deployment. The test creates its own PDFs and checks multi-source assembly, continuations, ordering, scanned/rotated sources, crop pixel exclusion, output layout/dimensions, invalid files, downloads and mobile overflow.
+
+Saved workspaces: `node tests/paper-persistence.cjs` checks that stored PDFs, selected questions and export settings survive a reload, can be restored, and still export.
 
 Question indexing: `node tests/paper-question-detection.cjs` uses synthetic numbered papers, image-only PDFs, multi-page questions, starred headings and blank/end pages. It also tests dropdown additions, source switching, duplicate prevention, crop corrections and PDF downloads. If ignored fixtures `artifacts/ocr-paper-test.pdf` and `artifacts/aqa-paper-test.pdf` are present, it additionally checks the public OCR June 2023 H446/01 paper (7 main questions) and AQA June 2023 7408/1 paper (31 main questions). These exam-board files are not distributed with Playground.
 

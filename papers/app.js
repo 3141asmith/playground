@@ -5,6 +5,7 @@ import {detectQuestions} from './detect.js?v=4';
 import {findQuestionParts,includedQuestionParts} from './subparts.js?v=2';
 import {estimateMarks,marksSummary} from './marks.js';
 import {inspectCover,coverKeys,coverText,clearCoverFields} from './cover.js?v=2';
+import {listWorkspaces,saveWorkspace,loadWorkspace,deleteWorkspace} from './storage.js';
 const {PDFDocument,StandardFonts,rgb}=window.PDFLib;
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdf.worker-6.5.438.js',import.meta.url).href;
 const $=id=>document.getElementById(id),papers=[],schemes=[],questions=[];
@@ -12,13 +13,13 @@ let active=null,pageNumber=1,crop=null,selected=null,busy=false,rendering=false,
 const status=text=>$('status').textContent=text;
 const make=(tag,text,cls)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;};
 function action(text,fn,label){const b=make('button',text);b.type='button';b.onclick=fn;if(label)b.setAttribute('aria-label',label);return b;}
-function controls(){coverControls();updateDetectionControls();$('update-section').disabled=busy||rendering||!crop||!questions.some(q=>q.parts.some(p=>p.id===viewedPart&&p.paper===active&&p.page===pageNumber));const available=!!active&&!busy;for(const id of ['upload','demo','files'])$(id).disabled=busy;for(const id of ['page-number','whole-page','apply-crop'])$(id).disabled=!available||rendering;$('previous').disabled=!available||pageNumber<=1;$('next').disabled=!available||pageNumber>=active.pdf.numPages;$('add-question').disabled=!available||rendering||!crop;$('append-part').disabled=!available||rendering||!crop||!questions.some(q=>q.id===selected);$('build').disabled=busy||!questions.length||!!$('cover-source').value&&!coverState||!!coverState&&marksSummary(questions).unknown>0;for(const el of document.querySelectorAll('#source-list button,#question-list button,#question-list input,.export-options input,.export-options select'))el.disabled=busy;document.querySelectorAll('.question-actions').forEach((row,i)=>{row.children[0].disabled=busy||i===0;row.children[1].disabled=busy||i===questions.length-1;});schemeControls();}
+function controls(){coverControls();updateDetectionControls();$('update-section').disabled=busy||rendering||!crop||!questions.some(q=>q.parts.some(p=>p.id===viewedPart&&p.paper===active&&p.page===pageNumber));const available=!!active&&!busy;for(const id of ['upload','demo','files'])$(id).disabled=busy;$('save-workspace').disabled=busy||!papers.length&&!schemes.length;$('workspace-name').disabled=busy;for(const id of ['load-workspace','delete-workspace'])$(id).disabled=busy||!$('saved-workspace').value;$('saved-workspace').disabled=busy;for(const id of ['page-number','whole-page','apply-crop'])$(id).disabled=!available||rendering;$('previous').disabled=!available||pageNumber<=1;$('next').disabled=!available||pageNumber>=active.pdf.numPages;$('add-question').disabled=!available||rendering||!crop;$('append-part').disabled=!available||rendering||!crop||!questions.some(q=>q.id===selected);$('build').disabled=busy||!questions.length||!!$('cover-source').value&&!coverState||!!coverState&&marksSummary(questions).unknown>0;for(const el of document.querySelectorAll('#source-list button,#question-list button,#question-list input,.export-options input,.export-options select'))el.disabled=busy;document.querySelectorAll('.question-actions').forEach((row,i)=>{row.children[0].disabled=busy||i===0;row.children[1].disabled=busy||i===questions.length-1;});schemeControls();}
 function fitPage(){const canvas=$('page-canvas');$('page-wrap').style.maxWidth=$('zoom').value==='width'?'900px':Math.max(140,Math.min(900,canvas.width/canvas.height*(innerHeight*.68-32)))+'px';}
 $('zoom').onchange=fitPage;window.addEventListener('resize',fitPage);
 function overlay(){const box=$('selection');box.hidden=!crop||!active||rendering;if(crop){box.style.left=crop.x*100+'%';box.style.top=crop.y*100+'%';box.style.width=crop.w*100+'%';box.style.height=crop.h*100+'%';for(const [id,key]of [['crop-x','x'],['crop-y','y'],['crop-w','w'],['crop-h','h']])$(id).value=(crop[key]*100).toFixed(1);}}
 function drawSources(){drawSchemeSources();updateCoverSources();const list=$('source-list');list.replaceChildren();$('source-count').textContent=papers.length;$('source-empty').hidden=!!papers.length;for(const paper of papers){const row=make('div',undefined,'source'+(paper===active?' active':'')),button=action(paper.name,()=>openPaper(paper));button.className='select-source';button.setAttribute('aria-pressed',String(paper===active));const info=make('div',undefined,'source-info');info.append(make('span',paper.pdf.numPages+' pages · '+(paper.detection?.questions.length||0)+' questions'),action('Remove',()=>removePaper(paper),'Remove '+paper.name));row.append(button,info);appendSchemePair(row,paper);list.append(row);}controls();}
 function removePaper(paper){if(busy)return;if(coverState?.paper===paper){status('This paper supplies the cover. Choose No cover page before removing it.');return;}const used=questions.some(q=>(q.partChoices?.original||q.parts).some(p=>p.paper===paper));if(used){status('This paper has selected questions. Remove their sections from your set before removing the source.');return;}papers.splice(papers.indexOf(paper),1);if(active===paper){active=null;renderId++;if(papers.length)openPaper(papers[0]);else{$('page-wrap').style.display='none';$('viewer-empty').hidden=false;$('source-title').textContent='No paper selected';drawDetectedQuestions();$('page-total').textContent='of 0';crop=null;rendering=false;overlay();}}paper.pdf.loadingTask.destroy();drawSources();}
-async function addFiles(files,kind='paper'){if(busy)return;const collection=kind==='scheme'?schemes:papers;busy=true;controls();const errors=[];let first=null;try{for(const file of files){status('Opening '+file.name+'…');if(collection.length>=20){errors.push(file.name+': 20-paper limit reached.');continue;}if(file.size>50*1024*1024||[...papers,...schemes].reduce((n,p)=>n+p.size,0)+file.size>150*1024*1024){errors.push(file.name+': file or total size limit exceeded.');continue;}if(collection.some(p=>p.name===file.name&&p.size===file.size&&p.modified===file.lastModified)){errors.push(file.name+': already loaded.');continue;}let task;try{const data=new Uint8Array(await file.arrayBuffer());task=pdfjs.getDocument({data,isEvalSupported:false,enableXfa:false,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/wasm/'});const pdf=await task.promise;if(pdf.numPages>500){await pdf.loadingTask.destroy();throw Error('More than 500 pages; split this paper first.');}const paper={id:crypto.randomUUID(),name:file.name,size:file.size,modified:file.lastModified,pdf,kind};status('Reading questions in '+file.name+'…');
+async function addFiles(files,kind='paper'){if(busy)return;const collection=kind==='scheme'?schemes:papers;busy=true;controls();const errors=[];let first=null;try{for(const file of files){status('Opening '+file.name+'…');if(collection.length>=20){errors.push(file.name+': 20-paper limit reached.');continue;}if(file.size>50*1024*1024||[...papers,...schemes].reduce((n,p)=>n+p.size,0)+file.size>150*1024*1024){errors.push(file.name+': file or total size limit exceeded.');continue;}if(collection.some(p=>p.name===file.name&&p.size===file.size&&p.modified===file.lastModified)){errors.push(file.name+': already loaded.');continue;}let task;try{const dataBlob=file.slice(0,file.size,'application/pdf'),data=new Uint8Array(await file.arrayBuffer());task=pdfjs.getDocument({data,isEvalSupported:false,enableXfa:false,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/wasm/'});const pdf=await task.promise;if(pdf.numPages>500){await pdf.loadingTask.destroy();throw Error('More than 500 pages; split this paper first.');}const paper={id:crypto.randomUUID(),name:file.name,size:file.size,modified:file.lastModified,pdf,kind,dataBlob};status('Reading questions in '+file.name+'…');
   try{paper.detection=await (kind==='scheme'?detectMarkScheme:detectQuestions)(pdf,(done,total)=>status('Reading '+file.name+': page '+done+' of '+total+'…'));}catch(error){paper.detection={questions:[],characters:0,failures:pdf.numPages};}
   collection.push(paper);first??=paper;}catch(error){await task?.destroy().catch(()=>{});errors.push(file.name+': '+(error.name==='PasswordException'?'Password-protected PDFs are not supported.':error.message));}}}finally{busy=false;for(const paper of papers)if(!paper.schemePairManual&&!paper.schemeId)paper.schemeId=matchingScheme(paper,schemes)?.id;drawSources();if(first)await openPaper(first);drawQuestions();status(errors.length?errors.join(' '):'Papers read. Choose a question from the dropdown, or select a region manually.');controls();}}
 async function openPaper(paper){if(busy)return;active=paper;pageNumber=1;drawDetectedQuestions();drawSources();await renderPage();}
@@ -137,4 +138,95 @@ $('attach-scheme-region').onclick=()=>{const q=questions.find(q=>q.id===selected
 $('build-scheme').onclick=async()=>{
   if(busy||!questions.length)return;busy=true;controls();$('progress').hidden=false;try{const answers=[];for(const q of questions){const match=resolveScheme(q);if(!match)throw Error('No mark scheme answer for '+q.label);const parts=await schemePartsForQuestion(q,match.parts,match.number,{custom:match.custom});answers.push({label:q.label,sourceNumber:match.number,parts});}if(answers.reduce((n,q)=>n+q.parts.length,0)>200)throw Error('The mark scheme exceeds the 200-region limit.');const title=($('paper-title').value.trim()||'Custom exam paper')+' - Mark scheme',bytes=await createPaper(answers,{title,documentKind:'scheme',separate:$('layout').value==='separate',scale:Number($('quality').value),exportFormat:$('export-format').value,removeSideMargins:$('remove-side-margins').checked,pageDecoration:$('page-decoration').value,pageTitle:$('page-title').checked,headings:true,renumber:$('renumber').checked,references:$('references').checked},(done,total)=>{$('progress').value=done/total;status('Building mark scheme: '+done+' of '+total+' sections...');});if(previewURL)URL.revokeObjectURL(previewURL);previewURL=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));$('preview').src=previewURL;$('download').href=previewURL;$('download').download=(title.replace(/[^a-z0-9 _-]/gi,'').slice(0,100)||'combined-mark-scheme')+'.pdf';document.querySelector('.preview-heading h2').textContent='Combined mark scheme';$('preview-dialog').showModal();status('Combined mark scheme ready. Check the answers and numbering before downloading.');}catch(error){status('Could not build the mark scheme: '+error.message);}finally{busy=false;$('progress').hidden=true;drawQuestions();controls();}
 };
-controls();document.body.dataset.ready='true';
+
+function encodeWorkspaceValue(value){
+  if(value&&typeof value==='object'){
+    const source=[...papers,...schemes].find(item=>item===value);
+    if(source)return {__workspaceSourceRef:source.id};
+    if(value instanceof Map)return {__workspaceMap:[...value].map(([key,item])=>[encodeWorkspaceValue(key),encodeWorkspaceValue(item)])};
+    if(Array.isArray(value))return value.map(encodeWorkspaceValue);
+    return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,encodeWorkspaceValue(item)]));
+  }
+  return value;
+}
+function decodeWorkspaceValue(value,sources){
+  if(Array.isArray(value))return value.map(item=>decodeWorkspaceValue(item,sources));
+  if(value&&typeof value==='object'){
+    if(Object.keys(value).length===1&&typeof value.__workspaceSourceRef==='string'){
+      const source=sources.get(value.__workspaceSourceRef);if(!source)throw Error('A saved question refers to a missing source PDF.');return source;
+    }
+    if(Object.keys(value).length===1&&Array.isArray(value.__workspaceMap))return new Map(value.__workspaceMap.map(([key,item])=>[decodeWorkspaceValue(key,sources),decodeWorkspaceValue(item,sources)]));
+    return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,decodeWorkspaceValue(item,sources)]));
+  }
+  return value;
+}
+function workspaceSettings(){
+  const values={};for(const id of ['paper-title','cover-date','cover-duration','layout','export-format','quality','page-decoration','cover-page','cover-field','zoom','detected-question','question-label'])values[id]=$(id).value;
+  for(const id of ['renumber','remove-side-margins','page-title','headings','references'])values[id]=$(id).checked;
+  values.coverSettingsOpen=document.querySelector('.cover-settings').open;values.coverPositionsOpen=document.querySelector('.cover-positions').open;return values;
+}
+async function refreshWorkspaces(selectedId=''){
+  const saved=await listWorkspaces(),select=$('saved-workspace');select.replaceChildren();const empty=make('option',saved.length?'Choose a saved workspace…':'No saved workspaces');empty.value='';select.append(empty);
+  for(const item of saved){const date=new Date(item.updatedAt).toLocaleString(),option=make('option',item.name+' · '+item.sourceCount+' PDFs · '+item.questionCount+' questions · '+date);option.value=item.id;select.append(option);}
+  select.value=saved.some(item=>item.id===selectedId)?selectedId:'';controls();$('workspace-storage-status').textContent=saved.length?'Saved locally in this browser profile. These PDFs are not uploaded.':'Saved PDFs and settings stay in this browser profile.';
+}
+function captureWorkspace(name){
+  const allSources=[...papers,...schemes],sources=allSources.map(item=>{
+    if(!item.dataBlob)throw Error('The original PDF data for '+item.name+' is not available to save. Add that PDF again, then retry.');
+    return {id:item.id,name:item.name,size:item.size,modified:item.modified,kind:item.kind,data:item.dataBlob,schemeId:item.schemeId,schemePairManual:item.schemePairManual};
+  });
+  const cover={paperId:coverState?.paper.id||$('cover-source').value||null,page:coverState?.page||Number($('cover-page').value)||1,fields:coverState?.fields||null};
+  const savedQuestions=questions.map(question=>question.marksPending?{...question,marksPending:false,marksSignature:null}:question);
+  return {id:crypto.randomUUID(),name,updatedAt:Date.now(),sourceCount:sources.length,questionCount:questions.length,sources,questions:encodeWorkspaceValue(savedQuestions),selected,activeId:active?.id||null,pageNumber,crop,viewedPart,settings:workspaceSettings(),cover};
+}
+async function saveCurrentWorkspace(){
+  if(busy)return;const name=$('workspace-name').value.trim();if(!name){$('workspace-name').focus();status('Enter a name for this saved workspace.');return;}if(!papers.length&&!schemes.length){status('Add at least one PDF before saving a workspace.');return;}
+  busy=true;controls();status('Saving PDFs and workspace…');try{const record=captureWorkspace(name);await saveWorkspace(record);status('Workspace “'+name+'” saved on this device.');try{await refreshWorkspaces(record.id);}catch(error){$('workspace-storage-status').textContent='Saved, but the list could not refresh: '+error.message;status('Workspace saved, but the saved-workspace list could not refresh: '+error.message);}}catch(error){$('workspace-storage-status').textContent='Could not save locally: '+error.message;status('Could not save the workspace: '+error.message);}finally{busy=false;controls();}
+}
+async function reopenSource(record){
+  if(!(record.data instanceof Blob))throw Error(record.name+' has no stored PDF data.');
+  const data=new Uint8Array(await record.data.arrayBuffer()),task=pdfjs.getDocument({data,isEvalSupported:false,enableXfa:false,cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/standard_fonts/',wasmUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/wasm/'});
+  try{
+    const pdf=await task.promise;if(pdf.numPages>500)throw Error('More than 500 pages; split this PDF first.');
+    const item={id:record.id,name:record.name,size:record.size,modified:record.modified,kind:record.kind,pdf,dataBlob:record.data,schemeId:record.schemeId,schemePairManual:record.schemePairManual};
+    item.detection=await (item.kind==='scheme'?detectMarkScheme:detectQuestions)(pdf,(done,total)=>status('Restoring '+item.name+': reading page '+done+' of '+total+'…'));
+    return item;
+  }catch(error){await task.destroy().catch(()=>{});throw Error('Could not restore '+record.name+': '+error.message);}
+}
+function applyWorkspaceSettings(values){
+  for(const id of ['paper-title','cover-date','cover-duration','layout','export-format','quality','page-decoration','cover-page','cover-field','zoom','detected-question','question-label'])if(values[id]!==undefined)$(id).value=values[id];
+  for(const id of ['renumber','remove-side-margins','page-title','headings','references'])if(values[id]!==undefined)$(id).checked=values[id];
+  document.querySelector('.cover-settings').open=!!values.coverSettingsOpen;document.querySelector('.cover-positions').open=!!values.coverPositionsOpen;
+}
+async function restoreWorkspace(){
+  if(busy)return;const id=$('saved-workspace').value;if(!id)return;
+  if((papers.length||schemes.length||questions.length)&&!confirm('Loading this workspace will replace the PDFs and questions currently in the builder. Continue?'))return;
+  busy=true;controls();status('Opening saved workspace…');const loaded=[];
+  try{
+    const record=await loadWorkspace(id),sourceMap=new Map();
+    for(const source of record.sources){const item=await reopenSource(source);loaded.push(item);sourceMap.set(item.id,item);}
+    const nextPapers=loaded.filter(item=>item.kind!=='scheme'),nextSchemes=loaded.filter(item=>item.kind==='scheme'),nextQuestions=decodeWorkspaceValue(record.questions,sourceMap);
+    if(!Array.isArray(nextQuestions))throw Error('The saved question set is not valid.');
+    for(const question of nextQuestions)if(question.marksPending){question.marksPending=false;question.marksSignature=null;}
+    const oldSources=[...papers,...schemes];papers.splice(0,papers.length,...nextPapers);schemes.splice(0,schemes.length,...nextSchemes);questions.splice(0,questions.length,...nextQuestions);
+    for(const old of oldSources)old.pdf.loadingTask.destroy();
+    for(const paper of papers)if(!paper.schemePairManual&&!paper.schemeId)paper.schemeId=matchingScheme(paper,schemes)?.id;
+    applyWorkspaceSettings(record.settings||{});active=sourceMap.get(record.activeId)||papers[0]||schemes[0]||null;selected=questions.some(q=>q.id===record.selected)?record.selected:questions[0]?.id||null;
+    pageNumber=active?Math.max(1,Math.min(active.pdf.numPages,Math.round(Number(record.pageNumber)||1))):1;crop=null;viewedPart=null;coverState=null;coverBase=null;
+    drawSources();drawQuestions();drawDetectedQuestions();if(active&&record.settings?.['detected-question'])$('detected-question').value=record.settings['detected-question'];updateDetectionControls();$('cover-source').value=record.cover?.paperId&&sourceMap.has(record.cover.paperId)?record.cover.paperId:'';
+    const restoredCrop=record.crop&&['x','y','w','h'].every(key=>Number.isFinite(record.crop[key]))?{...record.crop}:null;
+    if(active){await renderPage();if(restoredCrop){crop=restoredCrop;viewedPart=record.viewedPart||null;overlay();controls();}}
+    else{$('page-wrap').style.display='none';$('viewer-empty').hidden=false;$('source-title').textContent='No paper selected';}
+    busy=false;controls();
+    if($('cover-source').value){$('cover-page').value=record.cover?.page||1;await loadCover();if(coverState&&record.cover?.fields){coverState.fields=record.cover.fields;paintCover();}}
+    status('Workspace “'+record.name+'” restored.');try{await refreshWorkspaces(id);}catch(error){$('workspace-storage-status').textContent='Restored, but the list could not refresh: '+error.message;status('Workspace restored, but the saved-workspace list could not refresh: '+error.message);}drawQuestions();controls();
+  }catch(error){for(const item of loaded)if(![...papers,...schemes].includes(item))item.pdf.loadingTask.destroy();busy=false;controls();$('workspace-storage-status').textContent='Could not load locally: '+error.message;status('Could not load the workspace: '+error.message);}
+}
+async function removeSavedWorkspace(){
+  if(busy)return;const id=$('saved-workspace').value;if(!id)return;const name=$('saved-workspace').selectedOptions[0]?.textContent||'this workspace';if(!confirm('Delete '+name+' from this browser?'))return;
+  busy=true;controls();try{await deleteWorkspace(id);status('Saved workspace deleted from this device.');try{await refreshWorkspaces();}catch(error){$('workspace-storage-status').textContent='Deleted, but the list could not refresh: '+error.message;status('Workspace deleted, but the saved-workspace list could not refresh: '+error.message);}}catch(error){$('workspace-storage-status').textContent='Could not delete locally: '+error.message;status('Could not delete the saved workspace: '+error.message);}finally{busy=false;controls();}
+}
+$('save-workspace').onclick=saveCurrentWorkspace;$('load-workspace').onclick=restoreWorkspace;$('delete-workspace').onclick=removeSavedWorkspace;
+$('saved-workspace').onchange=controls;
+
+controls();document.body.dataset.ready='true';refreshWorkspaces().catch(error=>{$('workspace-storage-status').textContent='Local saving is unavailable: '+error.message;$('save-workspace').disabled=true;});
