@@ -32,7 +32,7 @@ export async function schemePartsForQuestion(question,parts,answerNumber,{custom
   const choices=question.partChoices?.groups.slice(1),partial=choices?.some(g=>!g.included);
   if(!partial||custom)return parts;
   const model=await findQuestionParts(parts,answerNumber,{tableMode:true}),labels=new Set(model.groups.slice(1).map(g=>g.label));
-  const questionLabels=new Set(choices.map(g=>g.label));if(!model.found||choices.some(g=>!labels.has(g.label))||[...labels].some(label=>!questionLabels.has(label)))throw Error(question.label+': could not match all omitted/retained part labels in the mark scheme. Review and select its answer regions manually.');
+  if(!model.found||choices.some(g=>!labels.has(g.label)))throw Error(question.label+': could not match all omitted/retained part labels in the mark scheme. Review and select its answer regions manually.');
   const included=new Set(choices.filter(g=>g.included).map(g=>g.label));for(const group of model.groups.slice(1))group.included=included.has(group.label);
   return includedQuestionParts(model);
 }

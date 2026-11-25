@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),G=require('../moonward/engine.js');
+const s=G.fresh();G.settle(s,0);const c=s.colonies[0];assert.equal(G.idle(c),0);
+assert(!G.adjust(s,'rock',1));assert.deepEqual(c.assignments,{iron:2,rock:0,ice:0});
+assert(!G.adjust(s,'rock',-1));assert(!G.adjust(s,'iron',5));assert(!G.adjust(s,'crystal',1));
+assert(G.adjust(s,'iron',-1));assert.equal(G.idle(c),1);assert.equal(c.assignments.iron,1);assert(G.valid(s));
+const restored=JSON.parse(JSON.stringify(s));assert(G.valid(restored));assert.equal(G.idle(restored.colonies[0]),1);
+assert(G.adjust(s,'ice',1));assert.equal(G.idle(c),0);assert.equal(c.assignments.iron,1);assert.equal(c.assignments.ice,1);
+assert(G.adjust(s,'iron',-1));assert(G.adjust(s,'ice',-1));assert.equal(G.idle(c),2);const before={...s.stock};G.tick(s,60);assert.deepEqual(s.stock,before);
+s.stock.iron=100;s.stock.rock=100;assert(G.build(s,'drone'));assert.equal(c.drones,3);assert.equal(G.idle(c),3);assert.equal(c.assignments.iron,0);
+assert(G.adjust(s,'rock',1));G.tick(s,10);assert.equal(s.stock.rock,102);assert(G.valid(s));
+c.assignments.iron=4;assert(!G.valid(s));
+console.log('PASS: exact +/- allocation, idle pool, limits, zero-deployment production, idle save recovery, new drones available and over-allocation validation');

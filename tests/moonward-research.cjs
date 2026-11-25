@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),G=require('../moonward/engine.js');
+const s=G.fresh();G.settle(s,0);for(const r of Object.keys(s.stock))s.stock[r]=1000;
+const before={...s.stock};assert(G.research(s,'smelting'));assert.equal(s.activeResearch.remaining,60);assert(!s.tech.includes('smelting'));assert.equal(s.stock.iron,before.iron-15);assert.equal(s.stock.rock,before.rock-10);assert(!G.build(s,'smelter'));
+const paid={...s.stock};assert(!G.research(s,'smelting'));assert(!G.research(s,'chemistry'));assert.deepEqual(s.stock,paid);
+G.tick(s,59);assert.equal(s.activeResearch.remaining,1);assert(!s.tech.includes('smelting'));G.tick(s,1);assert.equal(s.activeResearch,null);assert(s.tech.includes('smelting'));assert(G.build(s,'smelter'));
+assert(G.research(s,'chemistry'));assert.equal(s.activeResearch.remaining,180);G.tick(s,45);assert.equal(s.activeResearch.remaining,135);
+const restored=JSON.parse(JSON.stringify(s));assert(G.valid(restored));restored.lastSeen=100000;G.offline(restored,234000);assert.equal(restored.activeResearch.remaining,1);assert(!restored.tech.includes('chemistry'));G.offline(restored,235000);assert.equal(restored.activeResearch,null);assert(restored.tech.includes('chemistry'));G.offline(restored,235000);assert.equal(restored.tech.filter(t=>t==='chemistry').length,1);
+assert(G.research(restored,'rocketry'));assert.equal(restored.activeResearch.remaining,600);G.tick(restored,599);assert(!restored.tech.includes('rocketry'));G.tick(restored,1);assert(restored.tech.includes('rocketry'));
+const legacy=G.fresh();delete legacy.activeResearch;assert(G.valid(legacy));assert.equal(legacy.tech.length,0);
+const invalid=JSON.parse(JSON.stringify(s));invalid.activeResearch.remaining=-1;assert(!G.valid(invalid));invalid.activeResearch={key:'rocketry',remaining:600};assert(!G.valid(invalid));invalid.activeResearch={key:'unknown',remaining:1};assert(!G.valid(invalid));invalid.activeResearch={key:'chemistry',remaining:181};assert(!G.valid(invalid));
+assert(G.techs.smelting.duration<G.techs.chemistry.duration);assert(G.techs.chemistry.duration<G.techs.rocketry.duration);
+console.log('PASS: timed unlocks, upfront costs, single project, escalating durations, save/restore, full-rate offline completion, no duplicate unlocks, legacy saves and invalid research rejection');

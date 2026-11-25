@@ -1,0 +1,6 @@
+const assert=require('node:assert/strict'),E=require('../idlebound/engine.js');
+for(let sector=0;sector<6;sector++){const s=E.fresh('Danger','Mage');s.bossesDefeated=sector;const previous=Math.ceil((12+sector*5)*100/102);assert(E.bossDamage(s)>=previous*3);if(sector){s.bossesDefeated--;assert(E.bossDamage(s)<E.bossDamage({...s,bossesDefeated:sector}));}}
+function fight(geared){const s=E.fresh('Duel','Mage');s.control=true;s.sectorStage=5;s.stageEncounters=6;if(geared)s.gear=s.gear.map(g=>({...g,power:20}));E.startBoss(s);let hits=0;while(s.bossFight&&hits++<200){E.attack(s);E.advance(s,.25);}assert(E.valid(s));return s;}
+assert.equal(fight(false).sectorStage,4,'Starter equipment cannot outlast the boss, even while attacking');assert.equal(fight(true).bossesDefeated,1,'Investing in equipment makes the first boss beatable');
+const s=E.fresh('Defence','Warrior');s.level=7;s.skillPoints=7;s.control=true;const base=E.bossDamage(s);s.gear[1].power=20;assert(E.bossDamage(s)<base);const armoured=E.bossDamage(s);s.shop.plating=5;assert(E.bossDamage(s)<armoured);const plated=E.bossDamage(s);E.activate(s,2);assert(E.bossDamage(s)<plated);
+console.log('PASS: 3x+ damage across sectors, stronger later bosses, lethal starter duel, viable geared duel and stacking defensive investments');

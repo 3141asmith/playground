@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict'),E=require('../idlebound/engine.js');
+for(const [sector,stage,id,world] of [[0,1,'foundry',1],[1,5,'foundry',10],[2,1,'docks',11],[3,5,'docks',20],[4,1,'highlands',21],[5,5,'highlands',30],[6,5,'highlands',30]]){const s=E.fresh('Explorer','Hedge Wizard');s.bossesDefeated=sector;s.sectorStage=stage;s.stageEncounters=0;assert.equal(E.worldStage(s),world);assert.equal(E.environment(s).id,id);assert.equal(E.environment(E.upgrade(JSON.parse(JSON.stringify(s)))).id,id);}
+const s=E.fresh('AFK','Reluctant Knight');E.catchUp(s,43200);assert(E.bossReady(s));assert.equal(E.worldStage(s),5);assert.equal(E.environment(s).id,'foundry');
+console.log('PASS: environment boundaries at stages 11 and 21, final-stage farming, save restoration and boss-blocked offline play');

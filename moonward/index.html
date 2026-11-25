@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#111e27" />
+    <title>Moonward — A little further from home</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div
+      id="splash"
+      class="splash"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="splash-title"
+    >
+      <div class="splash-stars" aria-hidden="true"></div>
+      <div class="splash-content">
+        <svg class="mission-logo" viewBox="0 0 240 240" aria-hidden="true">
+          <defs>
+            <linearGradient id="moon-glow" x2="1" y2="1">
+              <stop stop-color="#fff0c5" />
+              <stop offset="1" stop-color="#db9b69" />
+            </linearGradient>
+          </defs>
+          <ellipse
+            cx="120"
+            cy="132"
+            rx="105"
+            ry="35"
+            fill="none"
+            stroke="#7ddbc0"
+            stroke-width="2"
+            transform="rotate(-30 120 132)"
+          />
+          <circle cx="125" cy="114" r="66" fill="url(#moon-glow)" />
+          <circle cx="102" cy="86" r="13" fill="#cc986f" opacity=".4" />
+          <circle cx="149" cy="137" r="20" fill="#cc986f" opacity=".3" />
+          <circle cx="92" cy="131" r="7" fill="#cc986f" opacity=".4" />
+          <g transform="translate(164 57) rotate(40)">
+            <path d="M0-31Q20-10 13 20H-13Q-20-10 0-31" fill="#f3f5ed" />
+            <path d="M-13 5L-24 25-10 20M13 5L24 25 10 20" fill="#ee705d" />
+            <circle
+              cy="-4"
+              r="7"
+              fill="#24414b"
+              stroke="#7ddbc0"
+              stroke-width="3"
+            />
+            <path d="M-6 23L0 45 6 23" fill="#ffbd75" />
+          </g>
+          <path
+            d="M38 47v18m-9-9h18M194 167v14m-7-7h14"
+            stroke="#a5dfcf"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+        </svg>
+        <p class="eyebrow">THE COLONY PROGRAM</p>
+        <h1 id="splash-title">MOONWARD</h1>
+        <p class="splash-tagline">A little further from home.</p>
+        <button id="enter-game" class="primary">Begin your journey ↗</button>
+        <p class="splash-footnote">
+          Small drones. A whole universe of possibilities.
+        </p>
+      </div>
+    </div>
+    <header>
+      <a class="brand" href="../"
+        ><span class="brand-icon">✦</span> MOONWARD<span class="edition"
+          >COLONY PROGRAM / 01</span
+        ></a
+      >
+      <div class="status">
+        <i></i> ALL SYSTEMS NOMINAL
+        <button
+          id="sound"
+          title="Toggle ambient sound"
+          aria-label="Enable ambient sound"
+        >
+          ♫
+        </button>
+      </div>
+    </header>
+    <main>
+      <div class="heading">
+        <div>
+          <p class="eyebrow">THE NEXT CHAPTER IS OUT THERE</p>
+          <h1>A little further from home<span>.</span></h1>
+        </div>
+        <p class="intro">
+          Small drones. Big possibilities.<br />Build your own corner of the
+          cosmos.
+        </p>
+      </div>
+      <section class="game">
+        <div class="toolbar">
+          <div>
+            <span class="live-dot"></span
+            ><strong id="world-name">Mission control</strong
+            ><span class="coordinates" id="coordinates"
+              >EARTH · LAUNCH COMPLEX 01</span
+            >
+          </div>
+          <button id="map-button">
+            ◎ <span>Star map</span>
+            <span class="badge" id="colony-count">0</span>
+          </button>
+        </div>
+        <div id="inventory" class="inventory"></div>
+        <div
+          id="colony-power"
+          class="power-balance"
+          hidden
+          aria-live="polite"
+        ></div>
+        <div class="game-body">
+          <div class="viewport">
+            <canvas
+              id="scene"
+              aria-label="Moon colony. Select a resource using the resource buttons below the scene."
+            ></canvas>
+            <div class="scene-label">
+              <span class="eyebrow" id="sector">YOUR JOURNEY STARTS HERE</span>
+              <h2 id="scene-title">One small launch.</h2>
+              <p id="scene-copy">
+                A new world is waiting for its first visitor.
+              </p>
+            </div>
+            <div class="scene-bottom">
+              <span id="drone-status">● FLIGHT SYSTEMS READY</span
+              ><span id="sol">MISSION DAY 001</span>
+            </div>
+            <div id="launch-panel">
+              <div class="launch-caption">
+                DESTINATION <strong>SELENE / MOON</strong>
+              </div>
+              <button id="launch">LAUNCH <span>↗</span></button>
+              <p>One rocket. An entire possibility.</p>
+            </div>
+            <div id="resource-picker" class="resource-picker" hidden></div>
+            <div id="flight" hidden>
+              <span>MISSION IN PROGRESS</span>
+              <h2>See you on the other side.</h2>
+              <p>Establishing your new outpost…</p>
+            </div>
+          </div>
+          <aside>
+            <nav aria-label="Colony panels">
+              <button data-tab="build" class="active">Build</button
+              ><button data-tab="research">Research</button
+              ><button data-tab="mission">
+                Mission <span class="nav-dot"></span></button
+              ><button data-tab="combat" id="fleet-tab" hidden>
+                Fleet <span class="nav-dot"></span>
+              </button>
+            </nav>
+            <div id="panel"></div>
+            <div class="advisor">
+              <span class="bot">▣</span>
+              <div>
+                <strong>YOUR CO-PILOT</strong>
+                <p id="tip">
+                  Every great colony starts with a brave little launch.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <footer class="game-footer">
+          <span
+            ><i></i>
+            <span id="save-status">Progress saved on this device</span></span
+          ><span
+            >OFFLINE PRODUCTION <strong>25%</strong>
+            <span class="separator">/</span> 8H MAX</span
+          >
+        </footer>
+      </section>
+      <div class="below">
+        <span>✧ BUILT FOR THE LONG WAY HOME</span
+        ><span>A quiet universe. A growing colony. Your own pace.</span>
+        <div class="below-links">
+          <a id="android-download" href="downloads/moonward.apk" download
+            >Android APK ↓</a
+          ><button id="help">Field guide ↗</button>
+        </div>
+      </div>
+    </main>
+    <div class="modal-backdrop" id="modal" hidden>
+      <section
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <button id="close-modal" aria-label="Close dialog">×</button>
+        <div id="modal-content"></div>
+      </section>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="engine.js"></script>
+    <script src="scene.js"></script>
+    <script src="session.js"></script>
+    <script src="panels.js"></script>
+    <script src="app.js"></script>
+    <script src="starmap.js"></script>
+    <script src="tooltips.js"></script>
+    <script src="prestige.js"></script>
+    <script src="combat.js"></script>
+    <script src="lifecycle.js"></script>
+    <script src="startup.js"></script>
+  </body>
+</html>
