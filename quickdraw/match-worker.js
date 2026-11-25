@@ -12,6 +12,6 @@ onmessage=({data})=>{
       const d=ShapeMatcher.distance(query,item.shape);
       if(d<score){score=d;best=item.record;}
     }
-    postMessage({type:'match',version:data.version,record:best});
+    postMessage({type:'match',version:data.version,record:best,checked:references.length});
   } catch(error) {postMessage({type:'error',message:error.message});}
 };

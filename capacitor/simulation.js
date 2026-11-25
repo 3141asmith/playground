@@ -35,7 +35,7 @@
   canvas.dataset.timeWindow=state.window;canvas.dataset.cursorTime=state.elapsed;canvas.dataset.cursorValue=valueAt(state.elapsed);canvas.dataset.yMin=min;canvas.dataset.yMax=max;
  }
  function render(){const v=voltage(state.elapsed),i=current(state.elapsed);$('voltage').textContent=v.toFixed(2)+' V';$('charge').textContent=(state.capacitance*v*1e9).toFixed(2)+' nC';$('current').textContent=(i*1e6).toFixed(3)+' μA';$('elapsed').textContent='t = '+timeText(state.elapsed);$('plate-charge').textContent=v>.1?'+   −':'';const path=state.mode==='charging'?chargePath:dischargePath,length=path.getTotalLength(),strength=Math.exp(-state.elapsed/tau());dots.forEach((dot,index)=>{const p=path.getPointAtLength(((index/dots.length+phase)%1)*length);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.setAttribute('opacity',strength<.005?0:strength);});graph();graph('current');graph('charge');plates();}
- function step(realSeconds){if(!state.running)return;state.elapsed=Math.min(state.elapsed+realSeconds*state.speed*tau(),8*tau());phase=(phase+realSeconds*state.speed*.22)%1;if(state.elapsed>=8*tau()){state.running=false;$('play').textContent='Replay';}}
- function frame(now){if(last&&!document.hidden)step(Math.min((now-last)/1000,.1));last=now;render();requestAnimationFrame(frame);}document.addEventListener('visibilitychange',()=>{last=0;});update();requestAnimationFrame(frame);
+ function step(realSeconds){state.elapsed=Math.min(state.elapsed+realSeconds*state.speed*tau(),8*tau());phase=(phase+realSeconds*state.speed*.22)%1;if(state.elapsed>=8*tau()){state.running=false;$('play').textContent='Replay';}}
+ function frame(now){if(last&&state.running&&!document.hidden)step(Math.min((now-last)/1000,.1));last=now;render();requestAnimationFrame(frame);}document.addEventListener('visibilitychange',()=>{last=0;});update();requestAnimationFrame(frame);
  window.capacitorLab={state,tau,voltage,current,geometryCapacitance,step,constants:{EPS0,SUPPLY}};
 })();

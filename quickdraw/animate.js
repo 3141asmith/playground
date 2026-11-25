@@ -75,7 +75,7 @@ async function prepareNext(token){
 }
 async function load(at=0){
   const token=++generation;playing=false;busy=true;failed=false;current=next=null;morph=null;elapsed=0;cache.clear();render();controls();$('retry-animation').hidden=true;$('animation-status').textContent='Loading category… First-time downloads may take a few minutes.';
-  try{const data=await batch(Math.floor(at/48)+1,token);if(token!==generation)return;total=data.total;index=Math.min(at,total-1);current=data.drawings[index%48];caption();render();await prepareNext(token);if(token!==generation)return;if(!failed)$('animation-status').textContent='Ready. Press Play to animate this category.';}
+  try{const data=await batch(Math.floor(at/48)+1,token);if(token!==generation)return;total=data.total;if(!total){$('animation-status').textContent='This category has no drawings.';return;}index=Math.min(at,total-1);current=data.drawings[index%48];caption();render();await prepareNext(token);if(token!==generation)return;if(!failed)$('animation-status').textContent='Ready. Press Play to animate this category.';}
   catch(error){report(error,token);}finally{if(token===generation){busy=false;controls();}}
 }
 async function advance(){if(!next)return false;current=next;next=null;morph=null;index=(index+1)%total;elapsed=0;caption();render();await prepareNext(generation);return true;}
@@ -100,6 +100,7 @@ $('next-drawing').onclick=async()=>{playing=false;controls();if(await advance())
 $('category').onchange=()=>{category=$('category').value;total=0;index=0;load();};
 $('speed').onchange=()=>{elapsed=0;lastTime=0;render();};
 $('jump-form').onsubmit=event=>{event.preventDefault();const number=Number($('jump').value);if(Number.isSafeInteger(number)&&number>=1&&number<=total)load(number-1);};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');reduced.addEventListener('change',()=>{if(reduced.matches&&playing){playing=false;lastTime=0;controls();$('animation-status').textContent='Paused to respect your reduced-motion preference. Press Play to animate again.';}});
 $('retry-animation').onclick=()=>total?load(index):init();
 async function init(){try{const response=await fetch('/api/categories');if(!response.ok)throw new Error('Could not load categories. Please retry.');const categories=await response.json();$('category').replaceChildren(...categories.map(item=>{const option=document.createElement('option');option.value=item.name;option.textContent=item.name+(item.local?' · downloaded':'');return option;}));$('category').value=category;await load();}catch(error){report(error,generation);}}
 requestAnimationFrame(frame);init();

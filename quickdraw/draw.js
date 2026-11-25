@@ -37,7 +37,7 @@ async function init(){
       if(result.type==='error'){fail('Matching failed. Please retry.');return;}
       if(result.type==='ready'){ready=true;$('match-status').textContent='Ready when you are. Start drawing to find a match.';send();return;}
       inFlight=false;
-      if(result.version===version&&strokes.length&&result.record)showMatch(result.record);
+      if(result.version===version&&strokes.length){if(result.record)showMatch(result.record);else{$('match-image').textContent='No close match yet.';$('match-name').textContent='Keep sketching';$('match-meta').textContent=result.checked+' drawings checked; nothing was close enough.';$('match-status').textContent='No close match yet. Keep drawing to refine your sketch.';}}
       if(sentVersion!==version)schedule();
     };
     worker.postMessage({type:'init',drawings:data.drawings});
