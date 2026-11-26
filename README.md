@@ -28,7 +28,7 @@ Skills unlock at levels 2 (double gold, 60s / 180s cooldown), 4 (50% haste, 30s 
 
 Progress saves on this device, with up to 12 hours of offline catch-up. Original version 1 saves are upgraded without losing progress. Export/import saves to transfer between the browser and Android. Download the prototype APK from the game's footer (`idlebound/downloads/idlebound.apk`, Android 8 or later). The APK bundles the game for offline use. Source and build instructions are in `../idlebound/`. Keep the bundled files and Android assets in sync when rebuilding. `tests/idlebound-models.cjs` checks skills, stacking, migration and offline timing; `tests/idlebound.cjs` checks browser controls, persistence, import/export and mobile layout.
 
-A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab, Temperature Explorer, Computer Science and AQA Physics. No build step or server API is needed.
+A static home for browser experiments: electron diffraction, Quickdraw, Motion Lab, Terminal Velocity, Moments Lab, Capacitor Lab, Stellar atlas, Vector Lab, Wave Lab, Temperature Explorer, Computer Science and AQA Physics. Terminal Velocity compares objects, parachutes and air/liquid drag with a live velocity-time graph. No build step or server API is needed.
 
 ## AQA A Level Physics — compulsory content
 

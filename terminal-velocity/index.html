@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore terminal velocity as different objects fall through air and liquid, with or without a parachute.">
+  <meta name="theme-color" content="#f5f2ea">
+  <title>Terminal velocity · Playground</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><a href="../">← playground.</a><span>04 / TERMINAL VELOCITY</span></header>
+  <section class="heading">
+    <div><p class="eyebrow">A FALL THROUGH AIR, WATER OR OIL</p><h1>When does falling stop speeding up?</h1></div>
+    <p>Choose an object, set its mass and drag, then drop it. See how a parachute or liquid changes its velocity.</p>
+  </section>
+  <div class="workspace">
+    <section class="controls panel" aria-labelledby="setup-title">
+      <div class="panel-heading"><div><p class="eyebrow">SET UP YOUR DROP</p><h2 id="setup-title">The object</h2></div></div>
+      <label class="field" for="preset">Start with an example
+        <select id="preset">
+          <option value="steel">Steel ball</option>
+          <option value="tennis">Tennis ball</option>
+          <option value="skydiver">Skydiver</option>
+          <option value="custom">Custom object</option>
+        </select>
+      </label>
+      <label class="field" for="mass">Mass <output id="mass-value">0.50 kg</output>
+        <input id="mass" type="range" min="0.05" max="100" step="0.05" value="0.5">
+      </label>
+      <label class="field" for="area">Object frontal area <output id="area-value">0.003 m²</output>
+        <input id="area" type="range" min="0.001" max="2" step="0.001" value="0.003">
+      </label>
+      <label class="field" for="volume">Object volume
+        <span class="number-field"><input id="volume" type="number" min="0.01" max="500" step="0.01" value="0.06"><span>L</span></span>
+      </label>
+      <label class="check-field"><input id="parachute" type="checkbox"><span>Open a parachute</span></label>
+      <label class="field nested" id="canopy-field" for="canopy-area" hidden>Parachute area <output id="canopy-value">25 m²</output>
+        <input id="canopy-area" type="range" min="0.5" max="100" step="0.5" value="25">
+      </label>
+      <div class="rule"></div>
+      <label class="check-field"><input id="liquid" type="checkbox" checked><span>Fall into a liquid</span></label>
+      <label class="field nested" id="drop-height-field" for="drop-height" hidden>Drop height <output id="drop-height-value">35 m</output>
+        <input id="drop-height" type="range" min="2" max="200" step="1" value="35">
+      </label>
+      <div id="liquid-options">
+        <label class="field" for="liquid-type">Liquid
+          <select id="liquid-type"><option value="water">Water</option><option value="oil">Oil</option></select>
+        </label>
+        <label class="field" for="surface-depth">Depth to surface <output id="surface-value">20 m</output>
+          <input id="surface-depth" type="range" min="1" max="100" step="1" value="20">
+        </label>
+        <label class="field" for="liquid-depth">Liquid depth <output id="depth-value">15 m</output>
+          <input id="liquid-depth" type="range" min="1" max="100" step="1" value="15">
+        </label>
+      </div>
+      <div class="buttons"><button id="drop" type="button">Drop item</button><button id="pause" class="secondary" type="button" disabled>Pause</button><button id="reset" class="secondary" type="button">Reset</button></div>
+      <p class="model-note">A quadratic-drag model. Change any setting to prepare a fresh drop.</p>
+    </section>
+    <div class="results">
+      <section class="scene panel" aria-labelledby="scene-title">
+        <div class="panel-heading"><div><p class="eyebrow">THE DROP</p><h2 id="scene-title">Watch it fall</h2></div><span id="status" role="status" aria-live="polite">Ready</span></div>
+        <canvas id="world" role="img" aria-label="Animated object falling through air and into liquid"></canvas>
+        <div class="readouts">
+          <div><span>VELOCITY</span><strong id="velocity">0.00 m/s</strong></div>
+          <div><span>TIME</span><strong id="time">0.00 s</strong></div>
+          <div><span>DISTANCE</span><strong id="distance">0.00 m</strong></div>
+        </div>
+      </section>
+      <section class="graph panel" aria-labelledby="graph-title">
+        <div class="panel-heading graph-heading"><div><p class="eyebrow">LIVE GRAPH</p><h2 id="graph-title">Velocity over time</h2></div><span class="graph-key"><i></i> Downwards</span></div>
+        <canvas id="chart" role="img" aria-label="Live graph of downward velocity in metres per second against time in seconds"></canvas>
+        <div class="terminals">
+          <div><span>ESTIMATED TERMINAL SPEED IN AIR</span><strong id="air-terminal">—</strong></div>
+          <div id="liquid-terminal-wrap"><span>ESTIMATED TERMINAL SPEED IN LIQUID</span><strong id="liquid-terminal">—</strong></div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <aside class="explanation">
+    <p><strong>Why does the speed level off?</strong> As an object speeds up, drag increases. Terminal velocity is reached when drag balances its weight in air (or effective weight in liquid), so its acceleration becomes zero.</p>
+    <p>Drag increases with fluid density, frontal area and the square of speed. A parachute greatly increases area. In liquid, buoyancy reduces the object's effective weight; the object's volume controls its displaced-fluid buoyancy.</p>
+  </aside>
+  <footer>Idealised model · downward velocity is positive · the object is fully immersed once its centre crosses the liquid surface · air density 1.225 kg/m³ · gravity 9.81 m/s²</footer>
+</main>
+<script src="simulation.js"></script>
+</body>
+</html>

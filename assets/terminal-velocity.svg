@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 850" fill="none">
+  <rect width="1280" height="850" fill="#e9eee6"/>
+  <path d="M0 581H1280V850H0z" fill="#dcebf0"/>
+  <path d="M0 581c75-20 142 20 215 0s140 20 215 0 142 20 215 0 140 20 215 0 142 20 215 0 140 20 205 0" stroke="#77a6b0" stroke-width="8"/>
+  <path d="M0 198H1280M0 326H1280M0 454H1280M0 710H1280" stroke="#cbd3c8" stroke-width="2"/>
+  <path d="M780 581V146H1160V581" stroke="#b8c5b8" stroke-width="3"/>
+  <path d="M813 527c55-33 42-101 111-138s61-90 101-121 69-49 90-74" stroke="#3c705d" stroke-width="9" stroke-linecap="round"/>
+  <path d="M814 527c55-33 42-101 111-138" stroke="#4785a0" stroke-width="9" stroke-linecap="round"/>
+  <path d="M770 163h405M770 590h405" stroke="#9eaa9b" stroke-width="3"/>
+  <path d="M245 197c-5-70 47-120 115-120s120 50 115 120z" fill="#c96b48"/>
+  <path d="M253 196 340 297l86-101" stroke="#765241" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="340" cy="320" r="30" fill="#b64223"/>
+  <circle cx="329" cy="309" r="8" fill="#f3c4a5"/>
+  <path d="M340 368v104m-25-37 25 37 25-37" stroke="#b64223" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="814" cy="527" r="12" fill="#3c705d"/>
+  <circle cx="925" cy="389" r="12" fill="#3c705d"/>
+  <circle cx="1026" cy="268" r="12" fill="#3c705d"/>
+  <circle cx="1115" cy="194" r="12" fill="#3c705d"/>
+  <text x="60" y="790" fill="#4c6053" font-family="Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="4">TERMINAL VELOCITY</text>
+</svg>
